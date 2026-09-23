@@ -1,7 +1,7 @@
 # Affinity Solutions — Multi-Platform DCR + AI/ML Demo Build Plan
 
 **Target date:** Ad Week, **2026-10-05**
-**Build environment:** SE demo account via connection `coco_conn`
+**Build environment:** Snowflake SE demo account (see README.md for setup)
 **Status:** Phases 0–5 COMPLETE. Ready for Ad Week rehearsal (Phase 6).
 
 ---
@@ -154,7 +154,7 @@ the app.** Three reasons:
 Installing the real app alongside, for credibility, is a stretch goal if
 provisioning lands in time. It is not on the critical path.
 
-### Environment layout — SE demo account, `coco_conn`
+### Environment layout — Snowflake demo account
 
 ```
 AFFINITY_DEMO
@@ -205,7 +205,7 @@ documentation; PubMatic from OpenRTB 2.6; Kargo from Kargo LLD Schema V0.
 | `CUSTOMER_CC_MAP_V` | Affinity ↔ consumer crosswalk | `INDID`, `HHID`, `CLIENT_AFS_INDID`, `CLIENT_AFS_HHID` |
 | `PREDICTION_FEED_V` | one row per individual × brand | `INDID`, `HHID`, `BRAND_ID`, `PREDICTED_SPEND_30D` (weekly, 30-day horizon), `SPEND_PREDICTION_DATE`, `PERCENTILE_RANK`, `CONFIDENCE_SCORE`, `PROPENSITY_SCORE` (quarterly, 12-month horizon), `PROPENSITY_TIER` (TOP_1PCT / TOP_5PCT / TOP_10PCT / NULL), `PROPENSITY_DATE` |
 
-> **SPECIFIED — from Kalyan's "Outcome Layer for Bid Optimization" document.**
+> **SPECIFIED — from Affinity's "Outcome Layer for Bid Optimization" document.**
 > Two pre-computed model outputs per individual × brand:
 >
 > | | Propensity score | Predicted spend |
@@ -754,7 +754,7 @@ custom model over resolved impressions (§5.1). Mode 2 surfaces Affinity's
 pre-computed predictions directly as bid multipliers — no ML training on the
 consumer side, no first-party data to assemble, no training window to wait out.
 
-Per Kalyan's document: "a new endpoint customer gets a working bid multiplier
+Per Affinity's document: "a new endpoint customer gets a working bid multiplier
 immediately: the cold-start problem that usually stalls a consumption product
 for the first two quarters simply does not arise."
 
@@ -809,7 +809,7 @@ defensible.
 
 #### Accuracy proof — Q3 predictions vs Q4 actuals
 
-David specifically requested this demo beat: show Affinity's Q3 predictions
+Snowflake team specifically requested this demo beat: show Affinity's Q3 predictions
 against Q4 actual transaction data to prove model accuracy.
 
 Generate two synthetic snapshots:
@@ -823,7 +823,7 @@ Demo slide shows:
 - Propensity tier accuracy: what % of TOP_1PCT / TOP_5PCT / TOP_10PCT actually
   purchased?
 - Percentage of actual spend captured by top 10th percentile of predictions
-  (target: ~90%, per Kalyan's stated accuracy)
+  (target: ~90%, per Affinity's stated accuracy)
 - Dollar accuracy distribution (target: within +/-10%)
 
 #### Where it runs
@@ -917,7 +917,7 @@ Build in this order and drop from the bottom:
 1. §5.1 rules with the baseline-versus-enriched comparison — **without this there
    is no demo**
 2. §5.1b prediction as bid multipliers + Q3-vs-Q4 accuracy proof — **the entry
-   point for the pitch; gated on Kalyan's prediction spec**
+   point for the pitch; gated on Affinity's prediction spec**
 3. §5.2 descriptor normalization — cheap, self-contained, improves §5.1
 4. §5.3 semantic view with verified queries — carries the live narration
 5. §5.4 agent — strong finish, first to cut
@@ -1086,7 +1086,7 @@ Phases 0 and 1 can start now. **Phase 2 onward is gated on these.**
    basket, attribution window.
 7. **Bidding rule output contract** — confirm or amend the §5.1 proposal.
 8. **Demo scope** — which of §5.1, 5.1b, 5.2–5.4, and §5A.1–5A.3 are in for Ad Week.
-9. **Prediction feed spec** — Kalyan's raw data and prediction feed field
+9. **Prediction feed spec** — Affinity's raw data and prediction feed field
    definitions. Gates §5.1b and the accuracy proof.
 10. **Platform demo scope** — confirm which of the three platform-specific Streamlit
     apps (§5A.1–5A.3) to build vs stub.
@@ -1097,7 +1097,7 @@ Phases 0 and 1 can start now. **Phase 2 onward is gated on these.**
 
 ### Phase 0 — Environment ✅ COMPLETE
 
-- [x] Connect via `coco_conn`; confirm VPN. Account `BFB53628`, role `CORTEXCODECLIROLE`.
+- [x] Connect to Snowflake account (see README.md for connection setup).
 - [x] Confirm SFDCR is enabled in the account.
 - [x] Create `AFFINITY_DEMO` database with 10 schemas; provision `AFFINITY_GEN_WH`
       (Large) and `AFFINITY_DEMO_WH` (Medium).
@@ -1113,7 +1113,7 @@ Phases 0 and 1 can start now. **Phase 2 onward is gated on these.**
 - [x] `MID_SRC_V`: 565 merchants with 8 garbling patterns for noisy MERCHDESC.
 - [x] `MID_NORMALIZED` + view: Cortex AI descriptor normalization — 565/565 parsed.
 - [x] `PREDICTION_FEED_V`: 1M rows, propensity (12-mo quarterly, TOP_1/5/10% tiers)
-      + predicted spend (30-day weekly). Schema from Kalyan's bid optimization doc.
+      + predicted spend (30-day weekly). Schema from Affinity's bid optimization doc.
 - [x] `CUSTOMER_CC_MAP_V`: 100K individual crosswalk.
 
 ### Phase 2 — Consumer datasets ✅ COMPLETE
@@ -1153,7 +1153,7 @@ Phases 0 and 1 can start now. **Phase 2 onward is gated on these.**
 ```
 AFFINITY (Provider)                    SNOWFLAKE ML (Consumer Side)
 ┌─────────────────────┐
-│  Kalyan's Model     │
+│  Affinity's Model     │
 │  (Affinity IP)      │                ┌──────────────────────────────────────┐
 │                     │                │  CUSTOM TIER — trained in Snowflake  │
 │  ┌───────────────┐  │                │                                      │
@@ -1307,7 +1307,7 @@ multipliers) so that synthetic data exhibits realistic patterns:
 | 10 | Account edition and SFDCR enablement | ✅ Confirmed in Phase 0 |
 | 11 | Affinity provisioning for the real app | ➖ Stretch only, not on critical path |
 | 12 | `HASH_TYPE` dictionary discrepancy | Raise with Affinity |
-| 13 | Prediction feed spec from Kalyan | ✅ Received — `Affinity-Snowflake-Bid-Optimization.pdf`. Two model outputs (propensity + predicted spend), 4-quadrant strategy, 3 delivery shapes, validation holdout. `PREDICTION_FEED_V` updated. |
+| 13 | Prediction feed spec from Affinity | ✅ Received — `Affinity-Snowflake-Bid-Optimization.pdf`. Two model outputs (propensity + predicted spend), 4-quadrant strategy, 3 delivery shapes, validation holdout. `PREDICTION_FEED_V` updated. |
 | 14 | Platform-specific Streamlit app scope | ⛔ §6 item 10 — confirm which apps to build vs stub |
 
 ---
@@ -1322,7 +1322,7 @@ multipliers) so that synthetic data exhibits realistic patterns:
 | TTD REDS documentation | Full REDS schema, enum tables, identity model, cross-feed join rules, published attribution methodology |
 | `OpenRTB-2-6_FINAL_PubMatic.pdf` | OpenRTB 2.6 spec — BidRequest, Imp, Banner, Video, Site, App, Device, Geo, User, EID/UID object schemas |
 | `KARGO/` CSV files | Kargo LLD Schema V0 (47 fields), sample data, request form, FAQs |
-| `Affinity-Snowflake-Bid-Optimization.pdf` | Kalyan's spec: two prediction models (propensity 12-mo quarterly + predicted spend 30-day weekly), 4-quadrant bidding strategy, 3 delivery shapes, default-vs-custom framework, validation holdout, incrementality caveat, coverage caveats |
+| `Affinity-Snowflake-Bid-Optimization.pdf` | Affinity's spec: two prediction models (propensity 12-mo quarterly + predicted spend 30-day weekly), 4-quadrant bidding strategy, 3 delivery shapes, default-vs-custom framework, validation holdout, incrementality caveat, coverage caveats |
 
 **TTD documentation access.** The `open.thetradedesk.com` docs host redirects every
 request to an ad-tracking endpoint and is unusable. `partnersandbox.thetradedesk.com`

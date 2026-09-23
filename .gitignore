@@ -1,0 +1,20 @@
+# Reference documents (PDFs, XLSXs) — not needed for setup
+source_info/
+
+# Snowflake CLI / credentials
+.snowflake/
+*.toml
+*.json
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# IDE
+.vscode/
+.idea/

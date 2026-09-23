@@ -1,0 +1,201 @@
+"SEGMENT_ID","DIMENSIONS","BASELINE_FLOOR","RECOMMENDED_FLOOR","EXPECTED_REVENUE_LIFT_PCT","IMPRESSIONS","YIELD_MULTIPLIER"
+1,"weather.com / native / Connected TV",0.00643,0.03115,384.5,387,4.845
+2,"people.com / banner / Mobile/Tablet",0.00643,0.02923,354.6,766,4.546
+3,"espn.com / native / Connected TV",0.00643,0.02677,316.4,386,4.164
+4,"tmz.com / video / Mobile/Tablet",0.00643,0.02622,307.9,394,4.079
+5,"weather.com / native / Set Top Box",0.00643,0.02556,297.5,337,3.975
+6,"washingtonpost.com / native / Connected TV",0.00643,0.02552,296.9,405,3.969
+7,"people.com / video / Connected TV",0.00643,0.02520,292.0,410,3.920
+8,"nytimes.com / native / Mobile/Tablet",0.00643,0.02437,279.1,424,3.791
+9,"people.com / video / Mobile/Tablet",0.00643,0.02379,270.0,362,3.700
+10,"tmz.com / video / Connected TV",0.00643,0.02372,269.0,363,3.690
+11,"variety.com / native / Connected TV",0.00643,0.02366,268.0,364,3.680
+12,"people.com / video / Connected TV",0.00643,0.02366,268.0,364,3.680
+13,"weather.com / native / Personal Computer",0.00643,0.02353,266.0,366,3.660
+14,"bbc.com / video / Mobile/Tablet",0.00643,0.02353,266.0,366,3.660
+15,"people.com / video / Set Top Box",0.00643,0.02347,265.0,367,3.650
+16,"foxnews.com / video / Set Top Box",0.00643,0.02327,262.0,370,3.620
+17,"espn.com / native / Set Top Box",0.00643,0.02327,262.0,370,3.620
+18,"tmz.com / video / Connected TV",0.00643,0.02315,260.1,372,3.601
+19,"nytimes.com / video / Connected TV",0.00643,0.02290,256.2,376,3.562
+20,"buzzfeed.com / native / Personal Computer",0.00643,0.02284,255.3,377,3.553
+21,"people.com / native / Connected TV",0.00643,0.02279,254.4,378,3.544
+22,"weather.com / video / Phone",0.00643,0.02279,254.4,378,3.544
+23,"tmz.com / video / Personal Computer",0.00643,0.02254,250.6,382,3.506
+24,"techcrunch.com / native / Mobile/Tablet",0.00643,0.02248,249.7,383,3.497
+26,"bbc.com / video / Connected TV",0.00643,0.02237,247.9,385,3.479
+25,"espn.com / video / Personal Computer",0.00643,0.02237,247.9,385,3.479
+27,"variety.com / video / Personal Computer",0.00643,0.02219,245.2,388,3.452
+28,"espn.com / video / Mobile/Tablet",0.00643,0.02208,243.5,390,3.435
+29,"washingtonpost.com / native / Mobile/Tablet",0.00643,0.02208,243.5,390,3.435
+31,"buzzfeed.com / native / Connected TV",0.00643,0.02203,242.6,391,3.426
+30,"espn.com / video / Connected TV",0.00643,0.02203,242.6,391,3.426
+32,"weather.com / native / Mobile/Tablet",0.00643,0.02163,236.5,398,3.365
+33,"theverge.com / video / Connected Device",0.00643,0.02158,235.7,399,3.357
+34,"weather.com / native / Set Top Box",0.00643,0.02147,234.0,401,3.340
+35,"people.com / banner / Connected TV",0.00643,0.02145,233.6,803,3.336
+36,"washingtonpost.com / video / Connected Device",0.00643,0.02142,233.2,402,3.332
+37,"cnet.com / native / Mobile/Tablet",0.00643,0.02137,232.4,403,3.324
+38,"buzzfeed.com / video / Connected TV",0.00643,0.02111,228.3,408,3.283
+39,"theverge.com / video / Mobile/Tablet",0.00643,0.02106,227.5,409,3.275
+40,"variety.com / video / Tablet",0.00643,0.02095,225.9,411,3.259
+41,"theverge.com / video / Mobile/Tablet",0.00643,0.02045,218.1,421,3.181
+42,"theverge.com / banner / Set Top Box",0.00643,0.02037,216.8,761,3.168
+43,"weather.com / banner / Mobile/Tablet",0.00643,0.02021,214.3,767,3.143
+44,"techcrunch.com / video / Connected Device",0.00643,0.02020,214.2,341,3.142
+45,"techcrunch.com / banner / Set Top Box",0.00643,0.02003,211.5,774,3.115
+46,"weather.com / video / Connected TV",0.00643,0.02003,211.5,344,3.115
+47,"forbes.com / video / Mobile/Tablet",0.00643,0.01997,210.6,345,3.106
+48,"forbes.com / banner / Connected TV",0.00643,0.01987,209.1,780,3.091
+49,"weather.com / native / Mobile/Tablet",0.00643,0.01980,207.9,348,3.079
+50,"bbc.com / native / Mobile/Tablet",0.00643,0.01974,207.0,349,3.070
+51,"theverge.com / video / Connected TV",0.00643,0.01957,204.4,352,3.044
+52,"weather.com / native / Set Top Box",0.00643,0.01935,201.0,356,3.010
+53,"tmz.com / native / Set Top Box",0.00643,0.01929,200.1,357,3.001
+55,"weather.com / native / Tablet",0.00643,0.01924,199.3,358,2.993
+54,"people.com / native / Connected TV",0.00643,0.01924,199.3,358,2.993
+56,"techcrunch.com / native / Set Top Box",0.00643,0.01908,196.8,361,2.968
+57,"espn.com / banner / Connected TV",0.00643,0.01908,196.8,722,2.968
+59,"forbes.com / native / Connected TV",0.00643,0.01898,195.2,363,2.952
+58,"weather.com / native / Personal Computer",0.00643,0.01898,195.2,363,2.952
+60,"cnet.com / native / Connected TV",0.00643,0.01893,194.4,364,2.944
+61,"weather.com / video / Connected Device",0.00643,0.01888,193.6,365,2.936
+62,"weather.com / banner / Phone",0.00643,0.01886,193.3,822,2.933
+63,"theverge.com / video / Mobile/Tablet",0.00643,0.01882,192.8,366,2.928
+66,"nytimes.com / video / Connected TV",0.00643,0.01872,191.2,368,2.912
+65,"people.com / video / Set Top Box",0.00643,0.01872,191.2,368,2.912
+64,"espn.com / native / Phone",0.00643,0.01872,191.2,368,2.912
+67,"buzzfeed.com / video / Mobile/Tablet",0.00643,0.01867,190.4,369,2.904
+69,"foxnews.com / video / Personal Computer",0.00643,0.01867,190.4,369,2.904
+68,"foxnews.com / native / Connected TV",0.00643,0.01867,190.4,369,2.904
+71,"techcrunch.com / native / Mobile/Tablet",0.00643,0.01862,189.6,370,2.896
+70,"weather.com / video / Connected Device",0.00643,0.01862,189.6,370,2.896
+72,"bbc.com / native / Connected Device",0.00643,0.01852,188.1,372,2.881
+73,"techcrunch.com / native / Connected TV",0.00643,0.01852,188.1,372,2.881
+74,"forbes.com / video / Connected Device",0.00643,0.01852,188.1,372,2.881
+75,"buzzfeed.com / native / Personal Computer",0.00643,0.01847,187.3,373,2.873
+76,"washingtonpost.com / video / Personal Computer",0.00643,0.01847,187.3,373,2.873
+77,"techcrunch.com / banner / Connected TV",0.00643,0.01845,186.9,747,2.869
+82,"theverge.com / video / Connected TV",0.00643,0.01842,186.5,374,2.865
+78,"cnet.com / video / Tablet",0.00643,0.01842,186.5,374,2.865
+81,"weather.com / native / Connected TV",0.00643,0.01842,186.5,374,2.865
+80,"cnn.com / native / Set Top Box",0.00643,0.01842,186.5,374,2.865
+79,"espn.com / native / Phone",0.00643,0.01842,186.5,374,2.865
+84,"espn.com / native / Connected TV",0.00643,0.01837,185.7,375,2.857
+83,"people.com / native / Phone",0.00643,0.01837,185.7,375,2.857
+86,"techcrunch.com / banner / Connected TV",0.00643,0.01834,185.3,751,2.853
+85,"foxnews.com / banner / Connected TV",0.00643,0.01834,185.3,751,2.853
+87,"buzzfeed.com / video / Mobile/Tablet",0.00643,0.01832,185.0,376,2.850
+88,"people.com / native / Mobile/Tablet",0.00643,0.01832,185.0,376,2.850
+89,"espn.com / video / Connected TV",0.00643,0.01827,184.2,377,2.842
+90,"people.com / video / Connected TV",0.00643,0.01827,184.2,377,2.842
+92,"weather.com / video / Connected TV",0.00643,0.01823,183.5,378,2.835
+93,"bbc.com / video / Connected TV",0.00643,0.01823,183.5,378,2.835
+91,"forbes.com / video / Connected TV",0.00643,0.01823,183.5,378,2.835
+94,"weather.com / banner / Set Top Box",0.00643,0.01820,183.1,757,2.831
+96,"techcrunch.com / video / Connected TV",0.00643,0.01818,182.7,379,2.827
+95,"foxnews.com / native / Set Top Box",0.00643,0.01818,182.7,379,2.827
+97,"variety.com / video / Connected Device",0.00643,0.01813,182.0,380,2.820
+99,"cnet.com / video / Personal Computer",0.00643,0.01803,180.5,382,2.805
+98,"washingtonpost.com / native / Connected TV",0.00643,0.01803,180.5,382,2.805
+100,"buzzfeed.com / banner / Connected TV",0.00643,0.01801,180.2,765,2.802
+102,"cnet.com / video / Set Top Box",0.00643,0.01799,179.8,383,2.798
+101,"techcrunch.com / video / Connected TV",0.00643,0.01799,179.8,383,2.798
+105,"tmz.com / video / Tablet",0.00643,0.01794,179.1,384,2.791
+104,"forbes.com / video / Tablet",0.00643,0.01794,179.1,384,2.791
+103,"espn.com / native / Connected TV",0.00643,0.01794,179.1,384,2.791
+106,"people.com / video / Mobile/Tablet",0.00643,0.01789,178.3,385,2.783
+111,"people.com / video / Mobile/Tablet",0.00643,0.01785,177.6,386,2.776
+110,"techcrunch.com / native / Mobile/Tablet",0.00643,0.01785,177.6,386,2.776
+109,"theverge.com / video / Connected Device",0.00643,0.01785,177.6,386,2.776
+108,"tmz.com / native / Set Top Box",0.00643,0.01785,177.6,386,2.776
+107,"people.com / native / Personal Computer",0.00643,0.01785,177.6,386,2.776
+112,"weather.com / native / Mobile/Tablet",0.00643,0.01780,176.9,387,2.769
+113,"techcrunch.com / video / Connected TV",0.00643,0.01776,176.2,388,2.762
+114,"buzzfeed.com / native / Phone",0.00643,0.01776,176.2,388,2.762
+115,"cnn.com / native / Connected Device",0.00643,0.01771,175.5,389,2.755
+116,"nytimes.com / banner / Connected TV",0.00643,0.01769,175.1,779,2.751
+117,"buzzfeed.com / video / Personal Computer",0.00643,0.01766,174.7,390,2.747
+118,"people.com / native / Mobile/Tablet",0.00643,0.01766,174.7,390,2.747
+119,"cnet.com / video / Mobile/Tablet",0.00643,0.01762,174.0,391,2.740
+120,"techcrunch.com / video / Mobile/Tablet",0.00643,0.01762,174.0,391,2.740
+121,"buzzfeed.com / banner / Connected TV",0.00643,0.01762,174.0,782,2.740
+122,"buzzfeed.com / video / Personal Computer",0.00643,0.01757,173.3,392,2.733
+123,"forbes.com / native / Connected TV",0.00643,0.01753,172.6,393,2.726
+126,"buzzfeed.com / native / Phone",0.00643,0.01753,172.6,393,2.726
+125,"forbes.com / video / Connected TV",0.00643,0.01753,172.6,393,2.726
+124,"cnet.com / video / Connected TV",0.00643,0.01753,172.6,393,2.726
+127,"foxnews.com / video / Connected TV",0.00643,0.01749,172.0,394,2.720
+128,"foxnews.com / video / Personal Computer",0.00643,0.01744,171.3,395,2.713
+129,"people.com / native / Set Top Box",0.00643,0.01744,171.3,395,2.713
+130,"techcrunch.com / native / Connected TV",0.00643,0.01740,170.6,396,2.706
+131,"cnn.com / banner / Mobile/Tablet",0.00643,0.01737,170.2,793,2.702
+132,"techcrunch.com / video / Phone",0.00643,0.01735,169.9,397,2.699
+134,"cnet.com / native / Connected TV",0.00643,0.01735,169.9,397,2.699
+133,"buzzfeed.com / native / Connected Device",0.00643,0.01735,169.9,397,2.699
+138,"foxnews.com / native / Connected TV",0.00643,0.01731,169.2,398,2.692
+137,"tmz.com / native / Connected TV",0.00643,0.01731,169.2,398,2.692
+136,"bbc.com / native / Mobile/Tablet",0.00643,0.01731,169.2,398,2.692
+135,"techcrunch.com / video / Set Top Box",0.00643,0.01731,169.2,398,2.692
+140,"forbes.com / native / Set Top Box",0.00643,0.01727,168.6,399,2.686
+139,"foxnews.com / video / Connected TV",0.00643,0.01727,168.6,399,2.686
+141,"theverge.com / native / Connected TV",0.00643,0.01718,167.2,401,2.672
+144,"espn.com / video / Set Top Box",0.00643,0.01713,166.5,402,2.665
+145,"espn.com / native / Connected TV",0.00643,0.01713,166.5,402,2.665
+143,"tmz.com / video / Personal Computer",0.00643,0.01713,166.5,402,2.665
+142,"techcrunch.com / video / Connected TV",0.00643,0.01713,166.5,402,2.665
+146,"espn.com / banner / Personal Computer",0.00643,0.01708,165.6,807,2.656
+147,"nytimes.com / native / Connected TV",0.00643,0.01701,164.6,405,2.646
+148,"variety.com / video / Connected Device",0.00643,0.01697,163.9,406,2.639
+149,"people.com / video / Personal Computer",0.00643,0.01688,162.6,408,2.626
+150,"nytimes.com / native / Mobile/Tablet",0.00643,0.01684,162.0,409,2.620
+151,"washingtonpost.com / banner / Connected Device",0.00643,0.01680,161.3,820,2.613
+152,"cnn.com / native / Set Top Box",0.00643,0.01680,161.3,410,2.613
+153,"forbes.com / banner / Set Top Box",0.00643,0.01674,160.4,720,2.604
+154,"weather.com / banner / Connected TV",0.00643,0.01670,159.7,722,2.597
+155,"cnn.com / video / Set Top Box",0.00643,0.01664,158.8,414,2.588
+156,"variety.com / native / Connected Device",0.00643,0.01664,158.8,414,2.588
+157,"foxnews.com / video / Connected TV",0.00643,0.01660,158.2,415,2.582
+158,"foxnews.com / banner / Phone",0.00643,0.01658,157.9,727,2.579
+159,"theverge.com / banner / Personal Computer",0.00643,0.01658,157.9,727,2.579
+160,"techcrunch.com / native / Tablet",0.00643,0.01656,157.6,416,2.576
+161,"weather.com / banner / Tablet",0.00643,0.01640,155.1,735,2.551
+162,"cnn.com / banner / Mobile/Tablet",0.00643,0.01634,154.1,738,2.541
+163,"foxnews.com / banner / Connected TV",0.00643,0.01631,153.7,739,2.537
+164,"theverge.com / banner / Mobile/Tablet",0.00643,0.01629,153.4,740,2.534
+165,"weather.com / banner / Phone",0.00643,0.01618,151.7,745,2.517
+166,"people.com / banner / Connected TV",0.00643,0.01616,151.4,746,2.514
+167,"nytimes.com / native / Connected TV",0.00643,0.01614,151.0,427,2.510
+169,"cnn.com / banner / Set Top Box",0.00643,0.01594,148.0,756,2.480
+168,"buzzfeed.com / banner / Personal Computer",0.00643,0.01594,148.0,756,2.480
+170,"washingtonpost.com / banner / Personal Computer",0.00643,0.01591,147.4,758,2.474
+171,"nytimes.com / banner / Connected TV",0.00643,0.01580,145.8,763,2.458
+172,"tmz.com / banner / Mobile/Tablet",0.00643,0.01578,145.4,764,2.454
+173,"buzzfeed.com / banner / Mobile/Tablet",0.00643,0.01576,145.1,765,2.451
+174,"weather.com / banner / Set Top Box",0.00643,0.01566,143.5,770,2.435
+175,"espn.com / banner / Phone",0.00643,0.01566,143.5,770,2.435
+176,"espn.com / banner / Personal Computer",0.00643,0.01564,143.2,771,2.432
+177,"variety.com / banner / Connected TV",0.00643,0.01560,142.6,773,2.426
+179,"people.com / banner / Mobile/Tablet",0.00643,0.01551,141.3,777,2.413
+178,"theverge.com / banner / Connected Device",0.00643,0.01551,141.3,777,2.413
+180,"forbes.com / banner / Connected TV",0.00643,0.01546,140.4,780,2.404
+181,"cnn.com / video / Connected TV",0.00643,0.01533,138.5,337,2.385
+182,"washingtonpost.com / banner / Personal Computer",0.00643,0.01532,138.3,787,2.383
+183,"weather.com / banner / Connected Device",0.00643,0.01530,138.0,788,2.380
+184,"techcrunch.com / native / Mobile/Tablet",0.00643,0.01528,137.6,451,2.376
+185,"espn.com / banner / Tablet",0.00643,0.01522,136.8,792,2.368
+186,"foxnews.com / banner / Connected TV",0.00643,0.01521,136.5,793,2.365
+187,"people.com / banner / Personal Computer",0.00643,0.01513,135.3,797,2.353
+188,"cnet.com / video / Connected TV",0.00643,0.01511,135.0,342,2.350
+189,"tmz.com / video / Phone",0.00643,0.01506,134.3,343,2.343
+190,"theverge.com / native / Connected Device",0.00643,0.01502,133.6,344,2.336
+191,"foxnews.com / banner / Set Top Box",0.00643,0.01494,132.4,807,2.324
+192,"espn.com / native / Personal Computer",0.00643,0.01493,132.3,346,2.323
+194,"tmz.com / native / Connected TV",0.00643,0.01489,131.6,347,2.316
+193,"weather.com / video / Connected TV",0.00643,0.01489,131.6,347,2.316
+195,"espn.com / banner / Connected TV",0.00643,0.01488,131.5,810,2.315
+196,"washingtonpost.com / video / Mobile/Tablet",0.00643,0.01484,130.9,348,2.309
+200,"weather.com / video / Personal Computer",0.00643,0.01481,130.3,349,2.303
+197,"tmz.com / native / Personal Computer",0.00643,0.01481,130.3,349,2.303
+198,"washingtonpost.com / video / Set Top Box",0.00643,0.01481,130.3,349,2.303
+199,"tmz.com / video / Set Top Box",0.00643,0.01481,130.3,349,2.303

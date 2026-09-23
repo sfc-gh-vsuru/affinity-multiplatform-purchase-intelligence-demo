@@ -1,0 +1,7 @@
+"RULE_ID","PREDICATE","SUPPORT","AVG_PURCHASE","LIFT"
+4,"Format=ABA Display",810,7.46,1
+5,"Format=Runway",830,7.46,1
+6,"Format=HighRise",842,7.46,1
+2,"Format=Hover",820,7.47,1
+3,"Format=Venti",859,7.46,1
+1,"Format=Breakaway",908,7.47,1

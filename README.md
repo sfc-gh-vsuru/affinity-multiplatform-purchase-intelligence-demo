@@ -9,7 +9,7 @@ Demonstrates how Affinity Solutions' purchase-outcome data drives value across D
 | `apps/` | 6 Streamlit in Snowflake app source files |
 | `data/` | Pre-built CSV data files (compressed where >5MB) |
 | `setup/` | SQL scripts and upload shell script |
-| `adroll_demo/` | AdRoll-specific build plan |
+| `source_info/` | Reference docs (PDFs, build plans) — not tracked in git |
 | `DEMO_BUILD_PLAN.md` | Full technical build plan |
 | `DEMO_TALK_TRACK.md` | Presenter guide with chart-by-chart narration |
 

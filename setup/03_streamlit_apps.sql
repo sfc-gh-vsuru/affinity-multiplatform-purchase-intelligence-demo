@@ -1,7 +1,7 @@
 -- ============================================================================
 -- Affinity Solutions DCR + ML Demo — Streamlit App Deployment
 -- Run AFTER 02_load_data.sql and upload_data.sh
--- Creates all 5 Streamlit in Snowflake apps from staged source files
+-- Creates all 6 Streamlit in Snowflake apps from staged source files
 -- ============================================================================
 
 USE DATABASE AFFINITY_DEMO;
@@ -45,9 +45,17 @@ CREATE OR REPLACE STREAMLIT CROSS_PLATFORM_COMPARISON
   MAIN_FILE = '/streamlit_app.py'
   QUERY_WAREHOUSE = 'AFFINITY_DEMO_WH'
   TITLE = 'Affinity Cross-Platform + ML Models'
-  COMMENT = 'One data asset, three paths: DSP+SSP+Ad Server with ML model registry';
+  COMMENT = 'One data asset, four paths: DSP+Retargeting+SSP+Ad Server with 12 ML models';
+
+-- 6. AdRoll Purchase Intelligence
+CREATE OR REPLACE STREAMLIT ADROLL_PURCHASE_INTELLIGENCE
+  ROOT_LOCATION = '@AFFINITY_DEMO.APPS.STREAMLIT_STAGE/adroll_app'
+  MAIN_FILE = '/streamlit_app.py'
+  QUERY_WAREHOUSE = 'AFFINITY_DEMO_WH'
+  TITLE = 'AdRoll Purchase Intelligence — Conversion + B2B + CTV'
+  COMMENT = 'Affinity x AdRoll: conversion enrichment, funnel intelligence, B2B account scoring, CTV attribution, ML models';
 
 -- Verify
 SHOW STREAMLITS IN SCHEMA AFFINITY_DEMO.APPS;
 
-SELECT 'All 5 Streamlit apps deployed successfully.' AS STATUS;
+SELECT 'All 6 Streamlit apps deployed successfully.' AS STATUS;

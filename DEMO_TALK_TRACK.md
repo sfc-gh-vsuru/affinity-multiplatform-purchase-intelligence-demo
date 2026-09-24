@@ -2,7 +2,7 @@
 
 **Event:** Ad Week 2026 | **Date:** October 5, 2026
 **Presenter(s):** _____________
-**Duration:** ~25 minutes full run; each platform section can stand alone (~8 min each)
+**Duration:** ~30 minutes full run; each platform section can stand alone (~6-8 min each)
 
 ---
 
@@ -29,11 +29,12 @@
 | 2 | **TTD Bid Explorer** | TTD team / DSP buyers | 6 min | Deep-dive on bid rules, quadrants, ML models |
 | 3 | **PubMatic Yield Scorer** | PubMatic team / SSP sellers | 5 min | Inventory yield, floor optimization, ML models |
 | 4 | **Kargo Attribution** | Kargo team / CTV buyers | 5 min | Engagement-to-purchase attribution, CTV proof, ML models |
-| 5 | **Cross-Platform Comparison** | Internal / exec summary | 4 min | Side-by-side wrap-up, the pitch |
+| 5 | **AdRoll Purchase Intelligence** | AdRoll / NextRoll team | 6 min | Conversion enrichment, funnel intelligence, B2B scoring, CTV |
+| 6 | **Cross-Platform Comparison** | Internal / exec summary | 4 min | Side-by-side wrap-up across all 4 platforms |
 
-> **Tip:** For a platform-specific meeting, start with Dashboard 1 (tabs 1-2 only for context), then jump to that platform's dashboard. End with Dashboard 5 tab 4 ("The Pitch").
+> **Tip:** For a platform-specific meeting, start with Dashboard 1 (tabs 1-2 only for context), then jump to that platform's dashboard. End with Dashboard 6 tab 4 ("The Pitch").
 
-> **Important:** The 3 platform dashboards (TTD, PubMatic, Kargo) are independent — no cross-references to each other. Each one is safe to present standalone with only Affinity branding.
+> **Important:** The 4 platform dashboards (TTD, PubMatic, Kargo, AdRoll) are independent — no cross-references to each other. Each one is safe to present standalone with only Affinity branding.
 
 ---
 
@@ -420,52 +421,128 @@
 
 ---
 
-## Dashboard 5: Cross-Platform Comparison
+## Dashboard 5: AdRoll Purchase Intelligence
 
-**Streamlit app:** `AFFINITY_DEMO.APPS.CROSS_PLATFORM_COMPARISON`
-**Show this last as a wrap-up, or use tab 4 as a standalone closing slide. 4 tabs.**
+**Streamlit app:** `AFFINITY_DEMO.APPS.ADROLL_PURCHASE_INTELLIGENCE`
+**Show this when the audience is AdRoll/NextRoll. 6 tabs. Unique B2B angle.**
 
-### Tab 1 — "Match Rates"
+### Tab 1 — "The Opportunity"
 
-**What you see:** 3 metric cards with progress bars, stacked bar chart of all match methods by platform, detail table.
+**What you see:** Side-by-side (AdRoll events + conversions vs Affinity transactions + individuals), channel revenue comparison (pixel vs card swipe).
 
-**The story:** One data asset — Affinity's 300M+ cards — three different match rates. The same purchase data creates value at every layer of the ad stack.
+**The story:** AdRoll's pixel captures conversion intent but not actual purchases. Affinity sees every card swipe. The channel revenue chart reveals the gap — how much each channel over- or under-counts.
 
 | Element | Table |
 |---------|-------|
-| All match data | `AFFINITY_DEMO.CLEANROOM.MATCH_RATE_SUMMARY` |
+| Channel attribution | `AFFINITY_DEMO.ADROLL_CONSUMER.ADROLL_CHANNEL_ATTRIBUTION` |
+
+### Tab 2 — "Conversion Enrichment"
+
+**What you see:** Channel attribution table, true purchase rate by channel bar chart, match coverage metric (80.6%).
+
+**The story:** What percentage of AdRoll's conversions represent verified card-swipe purchases? The match rate is 80.6% — email SHA-256 is the strongest deterministic match of any platform.
+
+| Element | Table |
+|---------|-------|
+| Channel comparison | `AFFINITY_DEMO.ADROLL_CONSUMER.ADROLL_CHANNEL_ATTRIBUTION` |
+| Match rate | `AFFINITY_DEMO.CLEANROOM.ADROLL_MATCH_RATE_SUMMARY` |
+
+### Tab 3 — "Funnel Intelligence"
+
+**What you see:** 120 ML-derived funnel rules (BOOST/NEUTRAL/SUPPRESS), filters, rule table, lift histogram.
+
+**The story:** ML-derived rules from 10M funnel events. Each rule tells AdRoll which engagement patterns predict real purchases. "Channel=web AND Device=desktop" might be BOOST. "Channel=instagram AND Attribution=view_through" might be SUPPRESS.
+
+| Element | Table |
+|---------|-------|
+| Funnel rules (120) | `AFFINITY_DEMO.ADROLL_CONSUMER.ADROLL_FUNNEL_PURCHASE_RULES` |
+
+### Tab 4 — "B2B Account Scoring"
+
+**What you see:** HOT/WARM/COLD account tiers, industry x purchase score chart, top 20 accounts, journey stage vs purchase score.
+
+**What is this?** AdRoll's Site Traffic Revealer identifies companies visiting the advertiser's site (firmographics: industry, revenue, size). The ML model scores each company by actual purchase propensity using Affinity data. This is unique to AdRoll — none of the other platforms have B2B firmographic scoring.
+
+**The story:** 5,000 companies scored. 806 are HOT. The journey stage chart validates the ABM funnel — companies further along (MQL, Opportunity) have higher purchase scores. TOTAL_VISITS is the #1 feature, not firmographics — engagement frequency matters more than company size.
+
+| Element | Table |
+|---------|-------|
+| Account scores | `AFFINITY_DEMO.ADROLL_B2B.ADROLL_ACCOUNT_SCORES` |
+
+### Tab 5 — "CTV + Video Attribution"
+
+**What you see:** 50 CTV campaigns with purchase value, ROAS, and completion-to-purchase rate charts.
+
+**Note:** Impression-level CTV data is not publicly available from AdRoll. Attribution is based on matched conversion events.
+
+**The story:** CTV campaigns validated by actual card swipes. Kargo buyers ask "prove CTV works." This is the proof — which campaigns drive real purchases, and at what ROAS.
+
+| Element | Table |
+|---------|-------|
+| CTV attribution | `AFFINITY_DEMO.ADROLL_CONSUMER.ADROLL_CTV_ATTRIBUTION` |
+
+### Tab 6 — "ML Models + Features"
+
+**What you see:** 5 AdRoll-specific ML models, decile lift chart (3.22x), side-by-side feature importance (Conversion vs Funnel), holdout validation.
+
+**The story:** 5 Snowflake ML models trained on AdRoll data. The Conversion Classifier (3.22x top decile lift) predicts which pixel conversions are real card swipes. The Funnel Predictor identifies future purchasers from engagement behavior before they convert. ATTRIBUTED_REVENUE is the #1 feature for conversion; COMPOSITE_PROPENSITY (Affinity's score) is #1 for the funnel model.
+
+| Element | Table |
+|---------|-------|
+| Model registry | `AFFINITY_DEMO.ML.MODEL_REGISTRY` (ADROLL%) |
+| Decile lift | `AFFINITY_DEMO.ML.ADROLL_CONVERSION_DECILES` |
+| Feature importance | `AFFINITY_DEMO.ML.ADROLL_FEATURE_IMPORTANCE` |
+| Holdout | `AFFINITY_DEMO.ML.ADROLL_HOLDOUT_RESULTS` |
+
+---
+
+## Dashboard 6: Cross-Platform Comparison
+
+**Streamlit app:** `AFFINITY_DEMO.APPS.CROSS_PLATFORM_COMPARISON`
+**Show this last as a wrap-up, or use tab 4 as a standalone closing slide. 4 tabs. Now covers all 4 platforms.****
+
+### Tab 1 — "Match Rates"
+
+**What you see:** 4 metric cards with progress bars (AdRoll 80.6%, TTD 44.8%, PubMatic 26.2%, Kargo 22.5%), stacked bar chart of all match methods by platform, detail table.
+
+**The story:** One data asset — Affinity's 300M+ cards — four different match rates. AdRoll leads because email SHA-256 is deterministic. The same purchase data creates value at every layer of the ad stack.
+
+| Element | Table |
+|---------|-------|
+| TTD/PubMatic/Kargo match data | `AFFINITY_DEMO.CLEANROOM.MATCH_RATE_SUMMARY` |
+| AdRoll match data | `AFFINITY_DEMO.CLEANROOM.ADROLL_MATCH_RATE_SUMMARY` |
 
 ### Tab 2 — "Platform Outputs"
 
-**What you see:** 3 columns showing each platform's output tables and record counts.
+**What you see:** 2x2 grid: TTD + AdRoll on top, PubMatic + Kargo below. Each shows its unique outputs and record counts. ML model count by platform at bottom.
 
-**The story:** Same input, different outputs. TTD gets bidding rules and multipliers. PubMatic gets yield scores and SSP rules. Kargo gets engagement attribution and CTV proof. Each platform gets exactly what it needs in its native format.
+**The story:** Same input, four different outputs. TTD gets bidding rules. AdRoll gets funnel intelligence + B2B account scores. PubMatic gets yield scores. Kargo gets engagement attribution. Each platform gets exactly what it needs.
 
 | Element | Table |
 |---------|-------|
 | TTD rules | `AFFINITY_DEMO.ML.BIDDING_RULES` |
+| AdRoll funnel rules | `AFFINITY_DEMO.ADROLL_CONSUMER.ADROLL_FUNNEL_PURCHASE_RULES` |
+| AdRoll B2B scores | `AFFINITY_DEMO.ADROLL_B2B.ADROLL_ACCOUNT_SCORES` |
 | PubMatic yields | `AFFINITY_DEMO.PUBMATIC_CONSUMER.DEMO_OUTPUT_INVENTORY_YIELD_SCORES` |
 | PubMatic SSP rules | `AFFINITY_DEMO.PUBMATIC_CONSUMER.DEMO_OUTPUT_SSP_BIDDING_RULES` |
-| Kargo attributions | `AFFINITY_DEMO.KARGO_CONSUMER.DEMO_OUTPUT_ENGAGEMENT_PURCHASE_ATTR` |
+| Kargo ML rules | `AFFINITY_DEMO.KARGO_CONSUMER.DEMO_OUTPUT_ML_ENGAGEMENT_RULES` |
 | Kargo CTV | `AFFINITY_DEMO.KARGO_CONSUMER.DEMO_OUTPUT_CTV_ATTRIBUTION` |
 
 ### Tab 3 — "ML Models"
 
-**What you see:** Full model registry (7 models), decile lift chart, feature importance chart.
+**What you see:** Full model registry (12 models) with platform filter dropdown, decile lift comparison bar chart across all 4 platforms.
 
-**The story:** 7 Snowflake ML models trained across all three platforms — all inside the clean room boundary. Affinity delivers Default predictions from day one. Platforms train Custom models on their own data for even better results.
+**The story:** 12 Snowflake ML models trained across four platforms. Platform filter lets you drill into any platform's models. The decile lift comparison shows Kargo (3.45x) and AdRoll (3.22x) have the strongest ML separation.
 
 | Element | Table |
 |---------|-------|
-| Model registry | `AFFINITY_DEMO.ML.MODEL_REGISTRY` |
-| Decile lift | `AFFINITY_DEMO.ML.MODEL_VALIDATION_PURCHASE_DECILES` |
-| Feature importance | `AFFINITY_DEMO.ML.MODEL_VALIDATION_FEATURE_IMPORTANCE` |
+| Model registry (12 models) | `AFFINITY_DEMO.ML.MODEL_REGISTRY` |
 
 ### Tab 4 — "The Pitch"
 
-**What you see:** Markdown narrative with comparison table (DSP vs SSP vs Ad Server) and differentiator callout.
+**What you see:** Markdown narrative with 5-column comparison table (DSP vs Retargeting vs SSP vs Ad Server) and differentiator callout.
 
-**The story:** One data asset. Three platform types. Three problems solved. The differentiator: rules, not audiences. Interpretable, privacy-safe bidding predicates that drop into existing systems. Competitors sell scored audiences. We sell the strategy.
+**The story:** One data asset. Four platform types. Four problems solved. The differentiator: rules, not audiences.
 
 **End on the quote:** *"Rules, not audiences."*
 
@@ -493,6 +570,9 @@
 | `KARGO_CONSUMER` | `DEMO_OUTPUT_ENGAGEMENT_QUALITY_RULES` | Kargo tab 3 |
 | `KARGO_CONSUMER` | `DEMO_OUTPUT_ML_ENGAGEMENT_RULES` | Kargo tab 4 |
 | `CLEANROOM` | `MATCH_RATE_SUMMARY` | Pipeline tab 3, TTD tab 6, PubMatic tab 6, Kargo tab 6, Cross-Platform tab 1 |
+| `CLEANROOM` | `ADROLL_MATCH_RATE_SUMMARY` | AdRoll tab 2, Pipeline tab 3, Cross-Platform tab 1 |
+| `CLEANROOM` | `CROSSWALK_ADROLL` | AdRoll identity matching |
+| `CLEANROOM` | `GROUND_TRUTH_ADROLL` | AdRoll purchase labels |
 | `ML` | `BIDDING_RULES` | Pipeline tab 6, TTD tab 1, Cross-Platform tab 2 |
 | `ML` | `MODEL_REGISTRY` | Pipeline tab 5, TTD tab 4, PubMatic tab 5, Kargo tab 5, Cross-Platform tab 3 |
 | `ML` | `MODEL_VALIDATION_PURCHASE_DECILES` | Pipeline tab 5, TTD tab 4, Cross-Platform tab 3 |
@@ -512,5 +592,14 @@
 | `ML` | `DELIVERY_PER_ID_INSTRUCTION` | Pipeline tab 6, TTD tab 2 |
 | `ML` | `DELIVERY_VALUE_BASED_BIDDING` | Pipeline tab 6, TTD tab 2 |
 | `AI` | `QUADRANT_SUMMARY_V` | Pipeline tab 6, TTD tab 2 |
+| `ADROLL_CONSUMER` | `ADROLL_FUNNEL_PURCHASE_RULES` | AdRoll tab 3, Cross-Platform tab 2 |
+| `ADROLL_CONSUMER` | `ADROLL_CHANNEL_ATTRIBUTION` | AdRoll tab 1, AdRoll tab 2 |
+| `ADROLL_CONSUMER` | `ADROLL_CTV_ATTRIBUTION` | AdRoll tab 5 |
+| `ADROLL_CONSUMER` | `ADROLL_AUDIENCE_SEGMENTS` | AdRoll reference |
+| `ADROLL_B2B` | `ADROLL_ACCOUNT_SCORES` | AdRoll tab 4, Cross-Platform tab 2 |
+| `ADROLL_B2B` | `ADROLL_SITE_TRAFFIC_REVEALER` | AdRoll firmographics source |
+| `ML` | `ADROLL_CONVERSION_DECILES` | AdRoll tab 6 |
+| `ML` | `ADROLL_FEATURE_IMPORTANCE` | AdRoll tab 6 |
+| `ML` | `ADROLL_HOLDOUT_RESULTS` | AdRoll tab 6 |
 
 All tables live in database `AFFINITY_DEMO`.

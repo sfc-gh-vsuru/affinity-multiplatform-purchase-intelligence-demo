@@ -131,10 +131,11 @@ with steps[2]:
     st.header("Identity Resolution — Match Waterfall")
     st.caption("Each individual is matched by the highest-confidence method available. Select a platform to see its waterfall.")
 
-    platform = st.selectbox("Select platform", ["TTD", "PUBMATIC", "KARGO"])
+    platform = st.selectbox("Select platform", ["TTD", "PUBMATIC", "KARGO", "ADROLL"])
 
-    match_data = session.sql(f"""SELECT * FROM AFFINITY_DEMO.CLEANROOM.MATCH_RATE_SUMMARY
-        WHERE PLATFORM='{platform}' ORDER BY WATERFALL_STEP""").to_pandas()
+    match_data = session.sql(f"""SELECT * FROM AFFINITY_DEMO.CLEANROOM.MATCH_RATE_SUMMARY WHERE PLATFORM='{platform}'
+        UNION ALL SELECT * FROM AFFINITY_DEMO.CLEANROOM.ADROLL_MATCH_RATE_SUMMARY WHERE '{platform}'='ADROLL'
+        ORDER BY WATERFALL_STEP""").to_pandas()
 
     if len(match_data) > 0:
         total_rate = match_data['PCT_OF_TOTAL_AFS'].sum()
@@ -162,17 +163,18 @@ with steps[2]:
 
     st.markdown("---")
     st.subheader("Cross-Platform Match Rate Comparison")
-    all_match = session.sql("""SELECT PLATFORM, SUM(MATCHED_COUNT) AS MATCHED,
-        ROUND(SUM(PCT_OF_TOTAL_AFS),1) AS RATE
-        FROM AFFINITY_DEMO.CLEANROOM.MATCH_RATE_SUMMARY GROUP BY PLATFORM ORDER BY RATE DESC""").to_pandas()
+    all_match = session.sql("""SELECT PLATFORM, SUM(MATCHED_COUNT) AS MATCHED, ROUND(SUM(PCT_OF_TOTAL_AFS),1) AS RATE
+        FROM (SELECT * FROM AFFINITY_DEMO.CLEANROOM.MATCH_RATE_SUMMARY
+              UNION ALL SELECT * FROM AFFINITY_DEMO.CLEANROOM.ADROLL_MATCH_RATE_SUMMARY)
+        GROUP BY PLATFORM ORDER BY RATE DESC""").to_pandas()
     bar = alt.Chart(all_match).mark_bar().encode(
         x=alt.X('PLATFORM:N', sort='-y'),
         y=alt.Y('RATE:Q', title='Match Rate %'),
         color=alt.Color('PLATFORM:N', scale=alt.Scale(
-            domain=['TTD','PUBMATIC','KARGO'], range=['#3498db','#9b59b6','#e67e22']), legend=None)
+            domain=['ADROLL','TTD','PUBMATIC','KARGO'], range=['#e74c3c','#3498db','#9b59b6','#e67e22']), legend=None)
     ).properties(height=250)
     st.altair_chart(bar, use_container_width=True)
-    st.caption("Match rate varies by platform identity richness. TTD has 12 methods; PubMatic/Kargo have fewer signals but still unlock purchase data they never had.")
+    st.caption("Match rate varies by identity signals available. AdRoll uses email SHA-256 (strongest). TTD has 12 methods. PubMatic/Kargo have fewer signals.")
 
 # ── Step 4: Affinity Enrichment ──────────────────────────────────────────────
 with steps[3]:

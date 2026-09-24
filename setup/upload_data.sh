@@ -13,7 +13,7 @@ echo "Using Snowflake connection: $CONN"
 
 echo ""
 echo "=== Uploading data files to @AFFINITY_DEMO.APPS.DATA_STAGE ==="
-for dir in data/cleanroom data/ml data/ttd_consumer data/pubmatic_consumer data/kargo_consumer data/afs_provider; do
+for dir in data/cleanroom data/ml data/ttd_consumer data/pubmatic_consumer data/kargo_consumer data/afs_provider data/adroll_consumer data/adroll_b2b; do
     schema=$(basename "$dir")
     echo "  Uploading $dir/ -> @AFFINITY_DEMO.APPS.DATA_STAGE/$schema/"
     snow stage copy "$dir/" "@AFFINITY_DEMO.APPS.DATA_STAGE/$schema/" --overwrite --connection "$CONN" 2>&1 | grep -E "UPLOADED|Error" || true
@@ -21,7 +21,7 @@ done
 
 echo ""
 echo "=== Uploading Streamlit apps to @AFFINITY_DEMO.APPS.STREAMLIT_STAGE ==="
-for app in pipeline_app ttd_app pubmatic_app kargo_app crossplatform_app; do
+for app in pipeline_app ttd_app pubmatic_app kargo_app crossplatform_app adroll_app; do
     echo "  Uploading apps/$app/"
     snow stage copy "apps/$app/streamlit_app.py" "@AFFINITY_DEMO.APPS.STREAMLIT_STAGE/$app/" --overwrite --connection "$CONN" 2>&1 | grep -E "UPLOADED|Error" || true
 done

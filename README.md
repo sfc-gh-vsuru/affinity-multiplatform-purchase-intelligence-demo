@@ -1,19 +1,19 @@
 # Affinity Solutions — DCR + ML Multi-Platform Demo
 
-Demonstrates how Affinity Solutions' purchase-outcome data drives value across DSP (The Trade Desk), SSP (PubMatic), and Ad Server (Kargo) using Snowflake Data Clean Rooms and Snowflake ML.
+Demonstrates how Affinity Solutions' purchase-outcome data drives value across DSP (The Trade Desk), Retargeting DSP (AdRoll), SSP (PubMatic), and Ad Server (Kargo) using Snowflake Data Clean Rooms and Snowflake ML.
 
 ## What's Inside
 
 | Folder | Contents |
 |--------|----------|
-| `apps/` | 5 Streamlit in Snowflake app source files |
+| `apps/` | 6 Streamlit in Snowflake app source files |
 | `data/` | Pre-built CSV data files (compressed where >5MB) |
 | `setup/` | SQL scripts and upload shell script |
-| `source_info/` | Reference docs (PDFs, XLSXs) — not tracked in git |
+| `adroll_demo/` | AdRoll-specific build plan |
 | `DEMO_BUILD_PLAN.md` | Full technical build plan |
 | `DEMO_TALK_TRACK.md` | Presenter guide with chart-by-chart narration |
 
-## 5 Streamlit Dashboards
+## 6 Streamlit Dashboards
 
 | # | App | Tabs | Audience |
 |---|-----|------|----------|
@@ -21,7 +21,8 @@ Demonstrates how Affinity Solutions' purchase-outcome data drives value across D
 | 2 | TTD Bid Explorer | 6 | TTD / DSP buyers |
 | 3 | PubMatic Yield Scorer | 6 | PubMatic / SSP sellers |
 | 4 | Kargo Attribution | 6 | Kargo / CTV buyers |
-| 5 | Cross-Platform Comparison | 4 | Internal / exec summary |
+| 5 | AdRoll Purchase Intelligence | 6 | AdRoll / NextRoll — B2B + retargeting |
+| 6 | Cross-Platform Comparison | 4 | Internal / exec summary (all 4 platforms) |
 
 ## Prerequisites
 
@@ -103,8 +104,10 @@ AFFINITY_DEMO (Database)
 ├── TTD_CONSUMER      — TTD impression data + demo outputs
 ├── PUBMATIC_CONSUMER — PubMatic OpenRTB data + demo outputs
 ├── KARGO_CONSUMER    — Kargo LLD data + demo outputs
-├── CLEANROOM         — Match crosswalks + rate summaries
-├── ML                — ML validation, rules, delivery tables
+├── ADROLL_CONSUMER   — AdRoll GCR, S2S events, campaign metrics + demo outputs
+├── ADROLL_B2B        — AdRoll Site Traffic Revealer firmographics + account scores
+├── CLEANROOM         — Match crosswalks + rate summaries (all platforms)
+├── ML                — ML validation, rules, delivery tables (12 models)
 ├── AI                — Quadrant strategy
 ├── APPS              — Streamlit apps + stages
 └── UTIL              — Enum/reference tables
@@ -113,3 +116,5 @@ AFFINITY_DEMO (Database)
 ## Security Notes
 - No credentials, tokens, or connection strings are stored in this repo
 - All data is synthetic (generated, not real customer data)
+- AdRoll impression-level data is not publicly available; demo uses conversion-level data per documented API schemas
+- The `source_info/` folder (reference PDFs/docs) is gitignored

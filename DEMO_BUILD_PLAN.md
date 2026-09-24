@@ -2,7 +2,7 @@
 
 **Target date:** Ad Week, **2026-10-05**
 **Build environment:** Snowflake SE demo account (see README.md for setup)
-**Status:** Phases 0–5 COMPLETE. Ready for Ad Week rehearsal (Phase 6).
+**Status:** Phases 0-5 COMPLETE for TTD/PubMatic/Kargo. AdRoll platform added. Ready for Ad Week rehearsal.
 
 ---
 
@@ -11,11 +11,11 @@
 ### The high-level scope
 
 Show that Affinity's purchase-outcome data and prediction model deliver value
-**across the entire ad ecosystem** — DSPs, SSPs, and ad servers/publishers — via
-Snowflake Data Clean Rooms and AI/ML. One Affinity provider side, three platform
+**across the entire ad ecosystem** — DSPs, retargeting platforms, SSPs, and ad servers/publishers — via
+Snowflake Data Clean Rooms and AI/ML. One Affinity provider side, four platform
 consumers, same matching waterfall, platform-tailored outputs.
 
-### Demo structure — 1 + 3
+### Demo structure — 1 + 4
 
 | Demo | Audience | Core message |
 |---|---|---|
@@ -23,6 +23,7 @@ consumers, same matching waterfall, platform-tailored outputs.
 | **TTD-specific** | The Trade Desk | Bidding rules + prediction multipliers that drop into your existing bidder; fills the `OfflineProviderID` socket you already built |
 | **PubMatic-specific** | PubMatic | Inventory scoring — prove which supply drives real purchases, set informed floor prices, package premium inventory |
 | **Kargo-specific** | Kargo | Engagement-to-purchase attribution — close the loop between viewability/video events and actual sales, especially for CTV |
+| **AdRoll-specific** | AdRoll / NextRoll | Conversion enrichment (pixel vs card swipe), funnel intelligence, B2B account scoring via Site Traffic Revealer, CTV attribution |
 
 Each platform demo has its own **schemas, UDFs, and Streamlit app** so it can be
 shown standalone to that prospect. The cross-platform demo ties them together.

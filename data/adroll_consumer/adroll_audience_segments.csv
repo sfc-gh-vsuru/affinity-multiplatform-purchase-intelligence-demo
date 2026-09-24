@@ -1,0 +1,31 @@
+"SEGMENT_EID","SEGMENT_NAME","SEGMENT_TYPE","DURATION","IS_CONVERSION","CONVERSION_VALUE","ESTIMATED_SIZE"
+"seg-0001","Checkout Complete","url",30,true,75,45000
+"seg-0002","Add to Cart","url",14,true,25,120000
+"seg-0003","Product View - Electronics","products_viewed",7,false,0,350000
+"seg-0004","Product View - Apparel","products_viewed",7,false,0,280000
+"seg-0005","Product View - Home & Garden","products_viewed",7,false,0,190000
+"seg-0006","Homepage Visitors","url",30,false,0,800000
+"seg-0007","High-Intent Browsers","composite",14,false,0,95000
+"seg-0008","Cart Abandoners","composite",7,false,0,75000
+"seg-0009","Repeat Purchasers","crm",90,true,150,22000
+"seg-0010","Email Subscribers","email_list",180,false,0,180000
+"seg-0011","Facebook Lookalike Seed","crm",90,false,0,15000
+"seg-0012","CTV Viewers","impression",30,false,0,65000
+"seg-0013","Demo Requesters","url",30,true,500,3500
+"seg-0014","Trial Signups","url",60,true,200,8000
+"seg-0015","Gated Content Downloads","url",30,false,0,12000
+"seg-0016","Contact Sales Form","url",30,true,1000,2000
+"seg-0017","Blog Readers - Tech","url",14,false,0,250000
+"seg-0018","Blog Readers - Marketing","url",14,false,0,200000
+"seg-0019","Pricing Page Visitors","url",7,false,0,45000
+"seg-0020","Mobile App Users","crm",30,false,0,55000
+"seg-0021","Lapsed Customers (60-90d)","crm",90,false,0,35000
+"seg-0022","VIP Customers (Top 10%)","crm",180,false,0,10000
+"seg-0023","Intent - Cloud Computing","intent",30,false,0,40000
+"seg-0024","Intent - Data Analytics","intent",30,false,0,35000
+"seg-0025","Intent - Marketing Automation","intent",30,false,0,28000
+"seg-0026","New Visitors (First 24h)","url",1,false,0,450000
+"seg-0027","Returning Visitors","composite",30,false,0,320000
+"seg-0028","Cross-Device Matched","composite",30,false,0,180000
+"seg-0029","Native Ad Engagers","impression",14,false,0,85000
+"seg-0030","Video Completers","impression",14,false,0,42000

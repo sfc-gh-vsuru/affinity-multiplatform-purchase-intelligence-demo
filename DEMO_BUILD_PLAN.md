@@ -41,7 +41,13 @@ purchase-based evidence.
 quartiles, click-through — but no purchase outcomes. Cannot prove ROI to
 advertisers or justify premium CPMs for CTV inventory.
 
-Affinity has the missing half for all three: deterministic card-transaction
+**Retargeting DSP (AdRoll):** Tracks full-funnel events (pageView through purchase)
+and attributes conversions via pixel — but a pixel captures *intent*, not *outcome*.
+Did the person actually swipe a card? AdRoll also has a unique B2B angle via Site
+Traffic Revealer (firmographic data on site visitors), but no way to score those
+companies by actual purchase propensity without Affinity.
+
+Affinity has the missing half for all four: deterministic card-transaction
 outcomes covering ~50% of US households. **A Data Clean Room is the only place
 this join can happen.** That is the demo.
 
@@ -49,10 +55,11 @@ this join can happen.** That is the demo.
 
 1. **Affinity as DCR provider** — synthetic mirror of production purchase data,
    prediction feed, transactions, cards, merchants, brand/category taxonomy.
-2. **Three platform consumers**, each with platform-native schemas:
+2. **Four platform consumers**, each with platform-native schemas:
    - **TTD (DSP):** advertiser CRM, identity spine, REDS impression/conversion feeds
    - **PubMatic (SSP):** OpenRTB 2.6 flattened bid-request impression log
    - **Kargo (ad server):** LLD-schema event log (impressions, clicks, video events)
+   - **AdRoll (retargeting DSP):** Granular Conversion Report, S2S events, campaign metrics, Site Traffic Revealer (B2B)
 3. **A shared match waterfall** — eight methods, individual and household level.
    Runs identically for each consumer; identity fields differ per platform.
 4. **A normalized impression model** — platform-specific source tables mapped to
@@ -92,6 +99,14 @@ guesswork into evidence.
 (video quartiles, viewability via MOAT). Affinity closes the loop from engagement
 to purchase, with special CTV value via `device_platform` and `app_bundle_id`.
 
+**AdRoll:** The Granular Conversion Report (GCR) carries `email_sha256` — a
+deterministic match key that produces the highest match rate of any platform
+(80.6%). AdRoll's Site Traffic Revealer provides B2B firmographic data (industry,
+revenue, headcount, journey stage) on 5,000+ companies visiting advertiser sites.
+Combined with Affinity purchase data, this enables B2B account scoring that no
+other platform can offer. The pitch is *"your pixel says they converted — our
+cards say whether they actually bought."*
+
 ---
 
 ## 2. Architecture
@@ -117,6 +132,12 @@ PROVIDER — AFFINITY                      CONSUMERS
 │                        │──────────────▶│  Kargo (Ad server / publisher)  │
 │                        │               │  LLD event log                  │
 │                        │               │  → engagement-to-purchase attr  │
+│                        │               └─────────────────────────────────┘
+│                        │
+│                        │               ┌─────────────────────────────────┐
+│                        │──────────────▶│  AdRoll (Retargeting DSP)       │
+│                        │               │  GCR + S2S + Site Traffic Rev.  │
+│                        │               │  → funnel rules + B2B scores    │
 └────────────────────────┘               └─────────────────────────────────┘
 ```
 
@@ -163,14 +184,19 @@ AFFINITY_DEMO
 ├── TTD_CONSUMER         advertiser CRM, identity spine, REDS feeds
 ├── PUBMATIC_CONSUMER    OpenRTB flattened impression log, identity via EIDs
 ├── KARGO_CONSUMER       LLD event log, identity via RampID/IFA/IP
+├── ADROLL_CONSUMER      GCR conversions, S2S events, campaign metrics, funnel rules
+├── ADROLL_B2B           Site Traffic Revealer firmographics, B2B account scores
 ├── CLEANROOM            hashing, match waterfall, crosswalk (shared logic)
-├── NORMALIZED           platform-agnostic impression model for ML
-├── ML                   training sets, models, bidding rules, yield scores
+├── NORMALIZED           platform-agnostic impression/conversion model for ML
+├── ML                   training sets, 12 models, bidding rules, yield scores
 ├── AI                   semantic views, agent objects
 ├── APPS                 platform-specific Streamlit apps and UDFs
+│   ├── PIPELINE_APP     End-to-end pipeline story (6 tabs)
 │   ├── TTD_APP          TTD bid-rule explorer + spend efficiency dashboard
 │   ├── PUBMATIC_APP     PubMatic inventory yield scorer + floor optimizer
-│   └── KARGO_APP        Kargo engagement-to-purchase attribution + CTV dashboard
+│   ├── KARGO_APP        Kargo engagement-to-purchase attribution + CTV dashboard
+│   ├── ADROLL_APP       AdRoll conversion enrichment + B2B scoring + CTV
+│   └── CROSSPLATFORM_APP  Cross-platform comparison (all 4 platforms)
 └── UTIL                 data generators, REDS enum lookup tables, OpenRTB enums
 ```
 
@@ -520,39 +546,209 @@ availability on CTV devices.
 - **No economics fields** — Kargo LLD has no cost data. Rules optimize on
   purchase conversion rate and engagement quality, not spend efficiency.
 
-### 3.5 Normalized impression model
+### 3.5 AdRoll consumer data (retargeting DSP) — conversion-scoped, not impression-scoped
+
+AdRoll/NextRoll is a retargeting DSP. Unlike TTD (impression logs) or PubMatic
+(bid requests), AdRoll's primary data export is **conversion-scoped** — the
+Granular Conversion Report (GCR). Impression-level log data is not publicly
+available from AdRoll's API. This is a deliberate design choice by NextRoll and
+shapes the entire AdRoll demo around conversions, funnel events, and B2B signals.
+
+#### 3.5.1 Granular Conversion Report (GCR)
+
+The GCR is AdRoll's primary analytics export. Schema from `apidocs.nextroll.com`
+GraphQL Reporting API.
+
+| Column | Type | Description |
+|---|---|---|
+| `CONVERSION_ID` | VARCHAR | Unique conversion event ID |
+| `CONVERSION_TIMESTAMP` | TIMESTAMP | When the conversion occurred |
+| `EMAIL_SHA256` | VARCHAR | SHA-256 hashed email — **primary match key** |
+| `ADVERTISER_EID` | VARCHAR | AdRoll advertiser entity ID |
+| `CAMPAIGN_EID` | VARCHAR | Campaign entity ID |
+| `CAMPAIGN_NAME` | VARCHAR | Campaign display name |
+| `ADGROUP_EID` | VARCHAR | Ad group entity ID |
+| `ADGROUP_NAME` | VARCHAR | Ad group display name |
+| `AD_EID` | VARCHAR | Ad entity ID |
+| `AD_NAME` | VARCHAR | Ad display name |
+| `CHANNEL` | VARCHAR | `web`, `social`, `email`, `native`, `display`, `video`, `ctv` |
+| `DEVICE_TYPE` | VARCHAR | `desktop`, `mobile`, `tablet`, `ctv`, `other` |
+| `GEO_COUNTRY` | VARCHAR | Country code |
+| `GEO_REGION` | VARCHAR | State/region |
+| `GEO_CITY` | VARCHAR | City |
+| `GEO_DMA` | VARCHAR | Nielsen DMA |
+| `ATTRIBUTED_REVENUE` | FLOAT | Pixel-reported conversion value ($) |
+| `ATTRIBUTION_TYPE` | VARCHAR | `click_through`, `view_through` |
+| `ATTRIBUTION_WINDOW_DAYS` | INTEGER | 1, 7, 14, or 28 days |
+| `CONVERSION_TYPE` | VARCHAR | `purchase`, `signup`, `lead`, `addToCart`, `pageView` |
+| `LANDING_PAGE_URL` | VARCHAR | Destination URL |
+| `REFERRER_URL` | VARCHAR | Referring URL |
+| `OS` | VARCHAR | Operating system |
+| `BROWSER` | VARCHAR | Browser name |
+| `IP_ADDRESS` | VARCHAR | Device IP address |
+| `USER_AGENT` | VARCHAR | Full user agent string |
+| `IS_NEW_VISITOR` | BOOLEAN | First-time vs returning visitor |
+| `SESSION_DURATION_SEC` | INTEGER | Session length in seconds |
+
+**Key design difference from TTD/PubMatic/Kargo:** The GCR is conversion-scoped,
+not impression-scoped. Each row represents a conversion event, not an ad impression.
+This means the ML layer works on conversions (verifying which are real purchases)
+rather than on impressions (predicting which will lead to purchases).
+
+#### 3.5.2 Server-to-Server (S2S) Events
+
+AdRoll's S2S Event API tracks 13 event types across the full marketing funnel.
+Schema from `apidocs.nextroll.com`.
+
+| Column | Type | Description |
+|---|---|---|
+| `EVENT_ID` | VARCHAR | Unique event ID |
+| `EVENT_TIMESTAMP` | TIMESTAMP | When the event occurred |
+| `EVENT_TYPE` | VARCHAR | One of 13 types (see below) |
+| `EMAIL_SHA256` | VARCHAR | SHA-256 hashed email |
+| `ADVERTISER_EID` | VARCHAR | AdRoll advertiser entity ID |
+| `SESSION_ID` | VARCHAR | Session tracking ID |
+| `DEVICE_TYPE` | VARCHAR | Device category |
+| `CHANNEL` | VARCHAR | Marketing channel |
+| `GEO_COUNTRY` | VARCHAR | Country code |
+| `GEO_REGION` | VARCHAR | State/region |
+| `GEO_CITY` | VARCHAR | City |
+| `GEO_DMA` | VARCHAR | Nielsen DMA |
+| `IP_ADDRESS` | VARCHAR | Device IP |
+| `PAGE_URL` | VARCHAR | Page URL |
+| `REFERRER_URL` | VARCHAR | Referring URL |
+| `PRODUCT_ID` | VARCHAR | Product identifier (for commerce events) |
+| `PRODUCT_NAME` | VARCHAR | Product name |
+| `PRODUCT_PRICE` | FLOAT | Product price |
+| `QUANTITY` | INTEGER | Product quantity |
+
+**13 event types:**
+`pageView`, `productView`, `productSearch`, `addToCart`, `removeFromCart`,
+`startCheckout`, `purchase`, `signup`, `login`, `demoRequest`, `contactSales`,
+`signupTrial`, `custom`
+
+**B2C events:** pageView → productSearch → productView → addToCart → startCheckout → purchase
+**B2B events:** pageView → demoRequest / contactSales / signupTrial
+
+#### 3.5.3 Campaign Metrics
+
+Aggregated campaign performance data from AdRoll's GraphQL Reporting API.
+
+| Column | Type | Description |
+|---|---|---|
+| `DATE` | DATE | Reporting date |
+| `CAMPAIGN_EID` | VARCHAR | Campaign entity ID |
+| `CAMPAIGN_NAME` | VARCHAR | Campaign display name |
+| `CAMPAIGN_TYPE` | VARCHAR | `retargeting`, `brand_awareness`, `prospecting` |
+| `ADGROUP_EID` | VARCHAR | Ad group entity ID |
+| `CHANNEL` | VARCHAR | Marketing channel |
+| `DEVICE_TYPE` | VARCHAR | Device category |
+| `IMPRESSIONS` | INTEGER | Impressions served |
+| `CLICKS` | INTEGER | Clicks recorded |
+| `CTR` | FLOAT | Click-through rate |
+| `SPEND` | FLOAT | Ad spend ($) |
+| `CONVERSIONS` | INTEGER | Attributed conversions |
+| `ATTRIBUTED_REVENUE` | FLOAT | Pixel-reported revenue |
+| `CPA` | FLOAT | Cost per acquisition |
+| `ROAS` | FLOAT | Return on ad spend |
+| `VIDEO_COMPLETIONS` | INTEGER | Video completions (CTV/video campaigns) |
+| `VIDEO_COMPLETION_RATE` | FLOAT | Video completion rate |
+
+#### 3.5.4 Site Traffic Revealer (B2B firmographics)
+
+AdRoll's unique B2B capability — identifies companies visiting the advertiser's
+website using reverse IP lookup and firmographic databases. Schema from
+`apidocs.nextroll.com`.
+
+| Column | Type | Description |
+|---|---|---|
+| `DOMAIN` | VARCHAR | Company domain |
+| `COMPANY_NAME` | VARCHAR | Company display name |
+| `COMPANY_INDUSTRY` | VARCHAR | Industry vertical (~150 values: Technology, Healthcare, Finance, etc.) |
+| `COMPANY_REVENUE` | VARCHAR | Revenue bucket: `<$1M`, `$1M-$10M`, `$10M-$50M`, `$50M-$100M`, `$100M-$500M`, `$500M-$1B`, `>$1B` |
+| `COMPANY_SIZE` | VARCHAR | Employee count bucket: `1-10`, `11-50`, `51-200`, `201-500`, `501-1000`, `1001-5000`, `5001-10000`, `>10000` |
+| `JOURNEY_STAGE` | VARCHAR | ABM funnel stage: `Unaware`, `Aware`, `Engaged`, `MQL`, `Opportunity` |
+| `FIRST_VISIT_DATE` | DATE | First recorded visit |
+| `TOTAL_VISITS` | INTEGER | Total site visits |
+| `TOTAL_VISITORS` | INTEGER | Unique visitors |
+| `CONTACT_EMAIL_SHA256` | VARCHAR | SHA-256 hashed contact email (when available) |
+
+**What makes this unique:** No other platform in the demo (TTD, PubMatic, Kargo)
+has B2B firmographic data. This enables a completely new use case — scoring
+companies by actual purchase propensity rather than just web engagement.
+
+#### 3.5.5 Identity mapping for AdRoll
+
+| Affinity method | AdRoll field | Coverage notes |
+|---|---|---|
+| `HEM1` (hashed email) | `EMAIL_SHA256` in GCR + S2S | **Primary.** Deterministic, highest confidence. Present on ~80% of conversions. |
+| `IPA1` (IP) | `IP_ADDRESS` | Fallback for non-logged-in events |
+
+**No MAID, no name/address, no RampID.** AdRoll identity is email-centric.
+`HEM1` alone produces an 80.6% match rate against Affinity's base — the strongest
+of any platform because email SHA-256 is deterministic (not probabilistic like
+IP or device graph).
+
+#### 3.5.6 What makes AdRoll data distinctive
+
+- **Conversion-scoped, not impression-scoped** — ML works on "which conversions
+  are real purchases" rather than "which impressions lead to purchases." Different
+  question, different model architecture.
+- **Email SHA-256 as primary identity** — deterministic matching. No graph
+  resolution, no probabilistic decay. Strongest match rate of any platform.
+- **Full-funnel S2S events** — 13 typed events from pageView through purchase,
+  including B2B signals (demoRequest, contactSales, signupTrial). Enables funnel
+  intelligence rules.
+- **B2B firmographics** — Site Traffic Revealer is unique to AdRoll. Industry,
+  revenue, headcount, journey stage on 5,000+ companies. Combined with Affinity
+  purchase data, this powers account-level scoring.
+- **No impression-level data** — unlike TTD (REDS), PubMatic (OpenRTB logs), and
+  Kargo (LLD), AdRoll does not provide impression-level log streams publicly.
+  The demo uses conversion-level and campaign-aggregate data per documented API schemas.
+- **CTV attribution via campaign metrics** — CTV campaigns are attributed through
+  matched conversion events, not impression logs. Video completion rates and ROAS
+  are derived from campaign-level aggregates.
+
+### 3.6 Normalized impression model
 
 A platform-agnostic view that maps each platform's fields to a common feature
 space for ML training. Lives in `NORMALIZED` schema.
 
-| Normalized field | TTD source | PubMatic source | Kargo source |
-|---|---|---|---|
-| `PLATFORM` | `'TTD'` | `'PUBMATIC'` | `'KARGO'` |
-| `IMPRESSION_ID` | `ImpressionId` | `AUCTION_ID\|\|IMP_ID` | `AUCTION_ID` |
-| `TIMESTAMP` | `LogEntryTime` | `TIMESTAMP` | `EVENT_TIMESTAMP` |
-| `DEVICE_TYPE` | `DeviceType` (enum) | `DEVICE_TYPE` (enum) | `DEVICE_TYPE` (string) |
-| `OS` | `OS` (enum) | `DEVICE_OS` | `OS` |
-| `BROWSER` | `Browser` (enum) | derived from `DEVICE_UA` | `BROWSER` |
-| `GEO_ZIP` | `Zip` | `GEO_ZIP` | `POSTAL_CODE` |
-| `GEO_DMA` | `NielsenDMA` | `GEO_METRO` | `DMA` |
-| `GEO_STATE` | `Region` | `GEO_REGION` | `STATE_REGION` |
-| `IP_ADDRESS` | `IPAddress` | `DEVICE_IP` | `IP_ADDRESS` |
-| `SUPPLY_DOMAIN` | `Site` | `SITE_DOMAIN` | `PUBLISHER_DOMAIN` |
-| `AD_FORMAT` | `AdFormat` (enum) | `AD_FORMAT` | `MEDIA_TYPE` |
-| `CREATIVE_SIZE` | derived from format enums | `BANNER_W\|\|x\|\|BANNER_H` | `CREATIVE_SIZE` |
-| `CONTENT_GENRE` | `ContentGenre1` | `CONTENT_GENRE` | NULL |
-| `CONTENT_NETWORK` | `ContentNetwork` | `CONTENT_NETWORK` | NULL |
-| `CTV_APP` | NULL | NULL | `APP_NAME` |
-| `CTV_PLATFORM` | NULL | NULL | `DEVICE_PLATFORM` |
-| `CARRIER` | `Carrier` | `DEVICE_CARRIER` | `CARRIER` |
-| `VIEWABLE` | NULL (separate feed) | NULL | `MOAT_INVIEW_VIEWABLE` |
-| `VIDEO_COMPLETION` | NULL (VideoEvents feed) | NULL | derived from `EVENT_TYPE` |
-| `USER_HOUR_OF_WEEK` | `UserHourOfWeek` (0-167) | derived from timestamp | derived from timestamp |
+| Normalized field | TTD source | PubMatic source | Kargo source | AdRoll source |
+|---|---|---|---|---|
+| `PLATFORM` | `'TTD'` | `'PUBMATIC'` | `'KARGO'` | `'ADROLL'` |
+| `IMPRESSION_ID` | `ImpressionId` | `AUCTION_ID\|\|IMP_ID` | `AUCTION_ID` | `CONVERSION_ID` |
+| `TIMESTAMP` | `LogEntryTime` | `TIMESTAMP` | `EVENT_TIMESTAMP` | `CONVERSION_TIMESTAMP` |
+| `DEVICE_TYPE` | `DeviceType` (enum) | `DEVICE_TYPE` (enum) | `DEVICE_TYPE` (string) | `DEVICE_TYPE` (string) |
+| `OS` | `OS` (enum) | `DEVICE_OS` | `OS` | `OS` |
+| `BROWSER` | `Browser` (enum) | derived from `DEVICE_UA` | `BROWSER` | `BROWSER` |
+| `GEO_ZIP` | `Zip` | `GEO_ZIP` | `POSTAL_CODE` | NULL |
+| `GEO_DMA` | `NielsenDMA` | `GEO_METRO` | `DMA` | `GEO_DMA` |
+| `GEO_STATE` | `Region` | `GEO_REGION` | `STATE_REGION` | `GEO_REGION` |
+| `IP_ADDRESS` | `IPAddress` | `DEVICE_IP` | `IP_ADDRESS` | `IP_ADDRESS` |
+| `SUPPLY_DOMAIN` | `Site` | `SITE_DOMAIN` | `PUBLISHER_DOMAIN` | `LANDING_PAGE_URL` (domain) |
+| `AD_FORMAT` | `AdFormat` (enum) | `AD_FORMAT` | `MEDIA_TYPE` | `CHANNEL` |
+| `CREATIVE_SIZE` | derived from format enums | `BANNER_W\|\|x\|\|BANNER_H` | `CREATIVE_SIZE` | NULL |
+| `CONTENT_GENRE` | `ContentGenre1` | `CONTENT_GENRE` | NULL | NULL |
+| `CONTENT_NETWORK` | `ContentNetwork` | `CONTENT_NETWORK` | NULL | NULL |
+| `CTV_APP` | NULL | NULL | `APP_NAME` | NULL |
+| `CTV_PLATFORM` | NULL | NULL | `DEVICE_PLATFORM` | NULL |
+| `CARRIER` | `Carrier` | `DEVICE_CARRIER` | `CARRIER` | NULL |
+| `VIEWABLE` | NULL (separate feed) | NULL | `MOAT_INVIEW_VIEWABLE` | NULL |
+| `VIDEO_COMPLETION` | NULL (VideoEvents feed) | NULL | derived from `EVENT_TYPE` | `VIDEO_COMPLETION_RATE` |
+| `USER_HOUR_OF_WEEK` | `UserHourOfWeek` (0-167) | derived from timestamp | derived from timestamp | derived from timestamp |
+| `ATTRIBUTED_REVENUE` | NULL | NULL | NULL | `ATTRIBUTED_REVENUE` |
+| `CHANNEL` | NULL | NULL | NULL | `CHANNEL` |
+| `ATTRIBUTION_TYPE` | NULL | NULL | NULL | `ATTRIBUTION_TYPE` |
+
+**Note:** AdRoll's normalized rows represent conversions, not impressions. The
+`IMPRESSION_ID` maps to `CONVERSION_ID`. AdRoll-specific fields (`ATTRIBUTED_REVENUE`,
+`CHANNEL`, `ATTRIBUTION_TYPE`) are NULL for other platforms and vice versa.
 
 UDFs in `UTIL` handle enum translation (e.g., TTD `DeviceType` integer → string,
 PubMatic AdCOM `devicetype` integer → string, Kargo string passthrough).
 
-### 3.6 Matching input table
+### 3.7 Matching input table
 
 Consumer supplies only the fields its chosen match method requires. All hashed.
 
@@ -1047,18 +1243,71 @@ Pages:
 4. **Creative Format Comparison** — Kargo's proprietary formats (Runway, Breakaway, HighRise, etc.) ranked by purchase lift over standard banners.
 5. **Advertiser Report** — for a selected campaign, full engagement-to-purchase journey. Exportable proof of ROI for advertiser conversations.
 
-### 5A.4 Cross-platform comparison view
+### 5A.4 AdRoll demo — "Conversion enrichment + B2B account scoring"
 
-An additional page in each Streamlit app (or a fourth shared app) that shows the
-**same Affinity outcome data producing different outputs for different platforms**:
+**Audience:** AdRoll / NextRoll, retargeting buyers
 
-- Side-by-side: TTD gets bidding rules, PubMatic gets yield scores, Kargo gets
-  attribution reports — all from the same matched purchase outcomes.
-- Match rate comparison across platforms (TTD highest, SSP/ad server lower but
-  still valuable).
-- Common top-performing dimensions that appear in all three platforms' rules.
+**Value story:** AdRoll sees conversion events and attributes revenue via pixel —
+but a pixel captures intent, not outcome. Affinity verifies which conversions
+represent actual card swipes, generates funnel intelligence rules, and — uniquely
+for AdRoll — scores B2B accounts by real purchase propensity using Site Traffic
+Revealer firmographics. CTV campaigns are validated by actual purchases, not just
+impressions.
 
-This is the Affinity pitch: **one data asset, three monetization paths.**
+#### Output schema (`ADROLL_CONSUMER` + `ADROLL_B2B`)
+
+| Table | Schema | Description |
+|---|---|---|
+| `ADROLL_FUNNEL_PURCHASE_RULES` | `ADROLL_CONSUMER` | 120 ML-derived rules: `RULE_ID`, `PREDICATE`, `DIM`, `DIM_VALUE`, `SUPPORT`, `PURCHASE_RATE`, `RAW_LIFT`, `SHRUNK_LIFT`, `BID_MULTIPLIER`, `CI_LOWER/UPPER`, `RULE_ACTION` (BOOST/NEUTRAL/SUPPRESS) |
+| `ADROLL_CHANNEL_ATTRIBUTION` | `ADROLL_CONSUMER` | Per channel: `CHANNEL`, `CONVERSIONS`, `PIXEL_REVENUE`, `CARD_SWIPE_REVENUE`, `REVENUE_DELTA_PCT`, `VERIFIED_PURCHASES`, `TRUE_PURCHASE_RATE_PCT` |
+| `ADROLL_CTV_ATTRIBUTION` | `ADROLL_CONSUMER` | 50 CTV campaigns: `CAMPAIGN_NAME`, `VIDEO_IMPRESSIONS`, `VIDEO_COMPLETIONS`, `CTV_SPEND`, `MATCHED_PURCHASERS`, `TOTAL_PURCHASE_VALUE`, `CTV_ROAS`, `COMPLETION_TO_PURCHASE_RATE` |
+| `ADROLL_AUDIENCE_SEGMENTS` | `ADROLL_CONSUMER` | Audience segments: `SEGMENT_EID`, `SEGMENT_NAME`, `SEGMENT_TYPE`, `DURATION`, `IS_CONVERSION`, `CONVERSION_VALUE`, `ESTIMATED_SIZE` |
+| `ADROLL_ACCOUNT_SCORES` | `ADROLL_B2B` | 5,000 B2B accounts: `DOMAIN`, `COMPANY_NAME`, `COMPANY_INDUSTRY`, `COMPANY_REVENUE`, `COMPANY_SIZE`, `JOURNEY_STAGE`, `TOTAL_VISITS`, `PURCHASE_SCORE`, `PREDICTED_ACCOUNT_VALUE`, `SCORE_TIER` (HOT/WARM/COLD) |
+| `ADROLL_SITE_TRAFFIC_REVEALER` | `ADROLL_B2B` | Raw firmographic data: 10 fields per company including `CONTACT_EMAIL_SHA256` for Affinity matching |
+
+#### ML models — 5 AdRoll-specific models
+
+| Model | Type | Purpose | Key metric |
+|---|---|---|---|
+| `ADROLL_CONVERSION_CLASSIFIER` | `SNOWFLAKE.ML.CLASSIFICATION` | Predicts which pixel conversions are real card-swipe purchases | Top decile 3.22x lift |
+| `ADROLL_REVENUE_CLASSIFIER` | `SNOWFLAKE.ML.CLASSIFICATION` | Classifies conversions into revenue tiers (HIGH/MEDIUM/LOW) | Revenue-tier separation |
+| `ADROLL_FUNNEL_PREDICTOR` | `SNOWFLAKE.ML.CLASSIFICATION` | Predicts future purchase from pre-conversion funnel behavior | COMPOSITE_PROPENSITY is #1 feature |
+| `ADROLL_B2B_ACCOUNT_SCORER` | `SNOWFLAKE.ML.CLASSIFICATION` | Scores companies by purchase propensity using firmographic + visit data | TOTAL_VISITS is #1 feature |
+| `ADROLL_BRAND_FORECAST` | `SNOWFLAKE.ML.FORECAST` | Brand-level spend forecasting from AdRoll-attributed conversions | Directional brand ranking |
+
+#### ML validation tables
+
+| Table | Schema | Description |
+|---|---|---|
+| `ADROLL_CONVERSION_DECILES` | `ML` | 10 decile bins with purchase rate and lift. Top decile: 3.22x lift. |
+| `ADROLL_FEATURE_IMPORTANCE` | `ML` | Feature importance for Conversion Classifier and Funnel Predictor side-by-side. Conversion: ATTRIBUTED_REVENUE #1. Funnel: COMPOSITE_PROPENSITY #1. |
+| `ADROLL_HOLDOUT_RESULTS` | `ML` | Training vs holdout: purchase rate, revenue, conversion counts. Confirms model generalizes. |
+
+#### Streamlit app (`APPS.ADROLL_APP`)
+
+**"AdRoll Purchase Intelligence — Conversion + B2B + CTV"**
+
+Tabs:
+1. **The Opportunity** — side-by-side (AdRoll events vs Affinity transactions), channel revenue comparison (pixel vs card swipe). The gap is invisible revenue.
+2. **Conversion Enrichment** — channel attribution table, true purchase rate by channel, match coverage metric (80.6% via email SHA-256).
+3. **Funnel Intelligence** — 120 ML-derived funnel rules (BOOST/NEUTRAL/SUPPRESS), filters by action and dimension, lift histogram. Rules drop directly into AdRoll's bidding engine.
+4. **B2B Account Scoring** — HOT/WARM/COLD tiers across 5,000 companies. Industry × purchase score heatmap. Top 20 accounts by predicted value. Journey stage validation (MQL/Opportunity have highest scores). **Unique to AdRoll — no other platform has this.**
+5. **CTV + Video Attribution** — 50 CTV campaigns ranked by verified purchase value. Completion-to-purchase rate. ROAS comparison. Note: impression-level CTV data not publicly available; attribution uses matched conversion events.
+6. **ML Models + Features** — 5 model cards, decile lift chart (3.22x), feature importance side-by-side (Conversion vs Funnel), holdout validation.
+
+### 5A.5 Cross-platform comparison view
+
+An additional page in each Streamlit app (or a shared app) that shows the
+**same Affinity outcome data producing different outputs for four platforms**:
+
+- Side-by-side: TTD gets bidding rules, AdRoll gets funnel intelligence + B2B
+  account scores, PubMatic gets yield scores, Kargo gets attribution reports —
+  all from the same matched purchase outcomes.
+- Match rate comparison across platforms (AdRoll highest at 80.6% via email,
+  TTD 44.8%, PubMatic 26.2%, Kargo 22.5%).
+- 12 ML models across all 4 platforms, with decile lift comparison.
+
+This is the Affinity pitch: **one data asset, four monetization paths.**
 
 ---
 
@@ -1100,7 +1349,7 @@ Phases 0 and 1 can start now. **Phase 2 onward is gated on these.**
 
 - [x] Connect to Snowflake account (see README.md for connection setup).
 - [x] Confirm SFDCR is enabled in the account.
-- [x] Create `AFFINITY_DEMO` database with 10 schemas; provision `AFFINITY_GEN_WH`
+- [x] Create `AFFINITY_DEMO` database with 11 schemas; provision `AFFINITY_GEN_WH`
       (Large) and `AFFINITY_DEMO_WH` (Medium).
 - [x] Load REDS enum lookup tables into `UTIL` (5 tables).
 - [x] Load OpenRTB AdCOM enum tables into `UTIL` (5 tables).
@@ -1135,17 +1384,25 @@ Phases 0 and 1 can start now. **Phase 2 onward is gated on these.**
 - [x] `MATCHING_INPUT`: ~10M with RampID(60%), MAID(20%), IP fallback.
 
 #### 2d. Normalized impression model
-- [x] `IMPRESSIONS_NORMALIZED` view: ~23M rows spanning all 3 platforms.
+- [x] `IMPRESSIONS_NORMALIZED` view: ~23M rows spanning all 3 platforms + AdRoll conversions.
 - [x] 5 enum translation UDFs in `UTIL`.
+
+#### 2e. AdRoll consumer
+- [x] `ADROLL_GCR`: 2.2M conversions, 28 columns, email_sha256 identity, 7 channels.
+- [x] `ADROLL_S2S_EVENTS`: 10M funnel events, 13 event types, B2B signals (demoRequest, contactSales, signupTrial).
+- [x] `ADROLL_CAMPAIGN_METRICS`: Campaign-level aggregates, CTV video completions.
+- [x] `ADROLL_SITE_TRAFFIC_REVEALER`: 5,000 companies, firmographic data (industry, revenue, size, journey stage).
+- [x] `MATCHING_INPUT`: ~200K email SHA-256 identities.
 
 ### Phase 3 — Clean room and matching ✅ COMPLETE
 
 - [x] `HASH_IDENTITY()` UDF, `MATCH_METHOD_ORDER` table (12 methods), `RUN_MATCH_WATERFALL()` proc.
-- [x] Ground truth planted: TTD 60K, PubMatic 35K, Kargo 30K overlaps.
+- [x] Ground truth planted: TTD 60K, PubMatic 35K, Kargo 30K, AdRoll 200K overlaps.
 - [x] `CROSSWALK_TTD`: 44,812 matched (44.8% rate, all 12 methods).
 - [x] `CROSSWALK_PUBMATIC`: 26,231 matched (26.2%, 3 methods).
 - [x] `CROSSWALK_KARGO`: 22,475 matched (22.5%, 2 methods).
-- [x] `CROSSWALK_ALL` view + `MATCH_RATE_SUMMARY` view for dashboards.
+- [x] `CROSSWALK_ADROLL`: 80,607 matched (80.6% of Affinity base, email SHA-256).
+- [x] `CROSSWALK_ALL` view + `MATCH_RATE_SUMMARY` + `ADROLL_MATCH_RATE_SUMMARY` views.
 
 ### Phase 4 — AI/ML ✅ COMPLETE
 
@@ -1192,13 +1449,22 @@ using Affinity outcomes as labels and predictions as features, via Snowflake ML.
 Both are graded against the same observed purchase holdout, so a client can see
 whether their custom model actually beat the default.
 
-#### Model Registry — three Snowflake ML models
+#### Model Registry — 12 Snowflake ML models
 
-| Model | Type | Purpose | Key metric |
-|---|---|---|---|
-| `PURCHASE_CLASSIFIER` | `SNOWFLAKE.ML.CLASSIFICATION` | Predicts impression → purchase (binary) | Top decile 2.15x lift, captures 21.5% of purchases |
-| `SPEND_TIER_CLASSIFIER` | `SNOWFLAKE.ML.CLASSIFICATION` | Classifies individual×brand into spend tiers | Category spend (23%) and income (22%) are top predictors |
-| `BRAND_SPEND_FORECAST` | `SNOWFLAKE.ML.FORECAST` | Forecasts next-month brand spend from time series | Directionally accurate brand ranking across 112 brands |
+| Model | Platform | Type | Purpose | Key metric |
+|---|---|---|---|---|
+| `PURCHASE_CLASSIFIER` | TTD | `SNOWFLAKE.ML.CLASSIFICATION` | Impression → purchase (binary) | Top decile 2.15x lift |
+| `SPEND_TIER_CLASSIFIER` | TTD | `SNOWFLAKE.ML.CLASSIFICATION` | Individual×brand → spend tiers | Category spend 23%, income 22% top features |
+| `BRAND_SPEND_FORECAST` | Shared | `SNOWFLAKE.ML.FORECAST` | Brand-level monthly spend forecasting | Directional brand ranking, 112 brands |
+| `PUBMATIC_YIELD_CLASSIFIER` | PubMatic | `SNOWFLAKE.ML.CLASSIFICATION` | Inventory → purchase conversion | Top decile 2.5x lift |
+| `PUBMATIC_SPEND_CLASSIFIER` | PubMatic | `SNOWFLAKE.ML.CLASSIFICATION` | Inventory → spend tiers | BIDFLOOR #1 feature |
+| `KARGO_ENGAGEMENT_CLASSIFIER` | Kargo | `SNOWFLAKE.ML.CLASSIFICATION` | Engagement → purchase | Top decile 3.45x lift |
+| `KARGO_SPEND_CLASSIFIER` | Kargo | `SNOWFLAKE.ML.CLASSIFICATION` | Engagement → spend tiers | COMPOSITE_PROPENSITY #1 |
+| `ADROLL_CONVERSION_CLASSIFIER` | AdRoll | `SNOWFLAKE.ML.CLASSIFICATION` | Conversion → real purchase | Top decile 3.22x lift |
+| `ADROLL_REVENUE_CLASSIFIER` | AdRoll | `SNOWFLAKE.ML.CLASSIFICATION` | Conversion → revenue tier | Revenue-tier separation |
+| `ADROLL_FUNNEL_PREDICTOR` | AdRoll | `SNOWFLAKE.ML.CLASSIFICATION` | Funnel behavior → future purchase | COMPOSITE_PROPENSITY #1 |
+| `ADROLL_B2B_ACCOUNT_SCORER` | AdRoll | `SNOWFLAKE.ML.CLASSIFICATION` | Company firmographics → purchase score | TOTAL_VISITS #1 feature |
+| `ADROLL_BRAND_FORECAST` | AdRoll | `SNOWFLAKE.ML.FORECAST` | AdRoll-attributed brand-level forecast | Directional brand ranking |
 
 #### Feature importance (a demo highlight)
 
@@ -1266,6 +1532,15 @@ multipliers) so that synthetic data exhibits realistic patterns:
       (200), `DEMO_OUTPUT_PURCHASE_INVENTORY_PACKAGES`. 2 UDFs.
 - [x] **Kargo:** `DEMO_OUTPUT_ENGAGEMENT_PURCHASE_ATTR`, `DEMO_OUTPUT_PLACEMENT_PURCHASE_SCORES`,
       `DEMO_OUTPUT_CTV_ATTRIBUTION`, `DEMO_OUTPUT_ENGAGEMENT_QUALITY_RULES`. 2 UDFs.
+- [x] **AdRoll:** `ADROLL_FUNNEL_PURCHASE_RULES` (120), `ADROLL_CHANNEL_ATTRIBUTION` (7 channels),
+      `ADROLL_CTV_ATTRIBUTION` (50 campaigns), `ADROLL_AUDIENCE_SEGMENTS`,
+      `ADROLL_ACCOUNT_SCORES` (5,000 companies). 5 ML models trained.
+
+#### 4c. AdRoll-specific ML validation — all done
+- [x] `ADROLL_CONVERSION_DECILES`: 3.22x top-decile lift (strongest after Kargo).
+- [x] `ADROLL_FEATURE_IMPORTANCE`: Conversion Classifier (ATTRIBUTED_REVENUE #1) vs
+      Funnel Predictor (COMPOSITE_PROPENSITY #1) — distinct feature profiles.
+- [x] `ADROLL_HOLDOUT_RESULTS`: Training vs holdout confirms generalization.
 
 ### Phase 5 — AI layer, Streamlit apps, and rehearsal ✅ COMPLETE
 
@@ -1275,14 +1550,20 @@ multipliers) so that synthetic data exhibits realistic patterns:
       with lift distribution), Quadrant Strategy (4-quadrant metrics + delivery shapes),
       Spend Efficiency (holdout comparison + dimension drill-down), Prediction Accuracy
       (tier hit rates + conversion gap), Match Waterfall.
-- [x] **PubMatic Streamlit** (`APPS.PUBMATIC_YIELD_SCORER`): 4 tabs — Yield Heatmap
-      (publisher × format), Floor Optimizer (200 recommendations), Premium Packages, Identity Coverage.
-- [x] **Kargo Streamlit** (`APPS.KARGO_ATTRIBUTION_DASHBOARD`): 4 tabs — Attribution
+- [x] **PubMatic Streamlit** (`APPS.PUBMATIC_YIELD_SCORER`): 6 tabs — Yield Heatmap
+      (publisher × format), Floor Optimizer (200 recommendations), Premium Packages,
+      SSP Bidding Rules (271), ML Models (2 models, 2.5x lift), Identity Coverage.
+- [x] **Kargo Streamlit** (`APPS.KARGO_ATTRIBUTION_DASHBOARD`): 6 tabs — Attribution
       Funnel (placement scores), CTV Scoreboard (platform + app ranking), Creative Format
-      Comparison (lift analysis), Identity Coverage.
+      Comparison (lift analysis), ML Engagement Rules (191), ML Models (2 models, 3.45x lift),
+      Identity Coverage.
+- [x] **AdRoll Streamlit** (`APPS.ADROLL_PURCHASE_INTELLIGENCE`): 6 tabs — The Opportunity
+      (pixel vs card swipe), Conversion Enrichment (true purchase rate, 80.6% match),
+      Funnel Intelligence (120 rules), B2B Account Scoring (5,000 companies, HOT/WARM/COLD),
+      CTV + Video Attribution (50 campaigns), ML Models (5 models, 3.22x lift).
 - [x] **Cross-Platform** (`APPS.CROSS_PLATFORM_COMPARISON`): 4 tabs — Match Rate Comparison
-      (side-by-side 3 platforms), Platform Outputs (same data, different outputs), ML Models
-      (registry + decile lift + feature importance), The Pitch (one data asset, three paths).
+      (4 platforms, AdRoll 80.6% leading), Platform Outputs (2x2 grid), ML Models
+      (12-model registry + decile lift comparison), The Pitch (one data asset, four paths).
 - [x] **Pipeline** (`APPS.PIPELINE_END_TO_END`): 6-tab end-to-end story — The Problem,
       Data Clean Room (privacy boundaries), Identity Resolution (interactive waterfall),
       Affinity Enrichment (before/after), ML Training (models + feature importance),
@@ -1302,7 +1583,7 @@ multipliers) so that synthetic data exhibits realistic patterns:
 | 4 | PubMatic schema — OpenRTB 2.6 flattened | ✅ Specified from OpenRTB 2.6 spec |
 | 5 | Kargo schema — LLD V0 | ✅ Specified from Kargo LLD Schema V0 |
 | 6 | Build approach — rebuild in SFDCR | ✅ Recommended, §2 |
-| 7 | Partner scope — TTD + PubMatic + Kargo | ✅ Confirmed (expanded from TTD-only) |
+| 7 | Partner scope — TTD + PubMatic + Kargo + AdRoll | ✅ All 4 platforms built (AdRoll added Sep 2026) |
 | 8 | Volumes, match rates, coverage, label, rule contract | ✅ Dev tier built: 100K ind, 12M tx, 10M imp/platform |
 | 9 | Demo scope across §5.1–5.4 and §5A.1–5A.3 | ⛔ §6 item 8 |
 | 10 | Account edition and SFDCR enablement | ✅ Confirmed in Phase 0 |
@@ -1323,6 +1604,8 @@ multipliers) so that synthetic data exhibits realistic patterns:
 | TTD REDS documentation | Full REDS schema, enum tables, identity model, cross-feed join rules, published attribution methodology |
 | `OpenRTB-2-6_FINAL_PubMatic.pdf` | OpenRTB 2.6 spec — BidRequest, Imp, Banner, Video, Site, App, Device, Geo, User, EID/UID object schemas |
 | `KARGO/` CSV files | Kargo LLD Schema V0 (47 fields), sample data, request form, FAQs |
+| `apidocs.nextroll.com` (online) | AdRoll/NextRoll API documentation: GraphQL Reporting API, Granular Conversion Report schema (28 fields), S2S Event API (13 event types), Site Traffic Revealer (10 fields), campaign metrics |
+| Fivetran AdRoll connector docs | Schema verification: GCR fields, S2S events, campaign metrics mapping |
 | `Affinity-Snowflake-Bid-Optimization.pdf` | Affinity's spec: two prediction models (propensity 12-mo quarterly + predicted spend 30-day weekly), 4-quadrant bidding strategy, 3 delivery shapes, default-vs-custom framework, validation holdout, incrementality caveat, coverage caveats |
 
 **TTD documentation access.** The `open.thetradedesk.com` docs host redirects every
